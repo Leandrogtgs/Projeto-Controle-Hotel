@@ -1,0 +1,145 @@
+<!-- templates/minha_pagina/login.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Sistema de Consumo</title>
+
+    <style>
+        /* Reset básico */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .titulo-principal {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 400px;
+            color: #2c3e50;
+        }
+
+        .titulo-principal h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .titulo-principal p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        form {
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            width: 520px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #e67e22; /* laranja */
+            outline: none;
+        }
+
+        button {
+            background-color: #e67e22; /* laranja */
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #cf711a; /* laranja mais escuro */
+        }
+
+        p.error-message {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+
+        .container {
+            max-width: 800px;
+            margin: 80px auto;
+            background-color: #f0f4f8;
+            padding: 40px;
+            border-radius: 12px;
+
+            text-align: center;
+
+            position: relative;
+            z-index: 1;
+        }
+        
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>Bem-vindo ao Controle Inteligente RVN CRB</h1>
+        <p>Sistema dedicado ao controle de consumos.</p>
+
+    </div>
+    <h2>Login</h2>
+    
+    {% if form.errors %}
+        <p style="color: red;">Usuário ou senha incorretos. Tente novamente.</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_username">Usuário:</label>
+        {{ form.username }} <br><br>
+
+        <label for="id_password">Senha:</label>
+        {{ form.password }} <br><br>
+
+        <button type="submit">Entrar</button>
+    </form>
+</body>
+</html>

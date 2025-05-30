@@ -1,0 +1,690 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consumo de Água - Hotel</title>
+  <link rel="stylesheet" href="{% static 'minha_pagina/style.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="csrf-token" content="{{ csrf_token }}"> <!-- Adiciona o token CSRF -->
+  <style>
+    /* Estilos CSS (mantidos como no original) */
+    body {
+      background-color: #ffffff;
+      color: #111b21;
+      font-family: 'Inter', sans-serif;
+      padding: 40px 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .top-right-buttons {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+    }
+
+    .top-right-buttons button {
+      padding: 12px 24px;
+      background-color: #ff8c00; /* laranja */
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .top-right-buttons button:hover {
+      background-color: #e67e00;
+    }
+
+    .container {
+      background-color: #f2f2f2;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 900px;
+      box-sizing: border-box;
+      margin-top: 60px;
+      position: relative;
+      z-index: 1;
+      color: #111b21;
+    }
+
+    .titulo-com-botoes {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 28px;
+    }
+
+    #botaoAlterarConsumo {
+      padding: 8px 16px;
+      background-color: #ff8c00;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #botaoAlterarConsumo:hover {
+      background-color: #e67e00;
+    }
+
+    #botoesConsumoTipo {
+      display: none; /* Mantido oculto por padrão */
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    #botoesConsumoTipo button {
+      padding: 8px 16px;
+      background-color: #ff8c00;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #botoesConsumoTipo button:hover {
+      background-color: #e67e00;
+    }
+
+    input[type="number"] {
+      width: 80%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background-color: #ffffff;
+      color: #111b21;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="number"]:focus {
+      border-color: #ff8c00;
+      outline: none;
+    }
+
+    button[type="submit"],
+    button[type="button"] {
+      padding: 12px 25px;
+      background-color: #ff8c00;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      margin-top: 10px;
+    }
+
+    button[type="submit"]:hover,
+    button[type="button"]:hover {
+      background-color: #e67e00;
+    }
+
+    a {
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 15px;
+    }
+
+    /* Menu lateral com tema claro */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -260px;
+      width: 250px;
+      height: 100%;
+      background-color: #f2f2f2;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      box-sizing: border-box;
+      transition: right 0.3s ease;
+      z-index: 2000;
+    }
+
+    .side-menu.open {
+      right: 0;
+    }
+
+    .side-menu h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #111b21;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .side-menu a {
+      display: block;
+      margin: 15px 0;
+      color: #111b21;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .side-menu button {
+      width: 100%;
+      background-color: #ff8c00;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease;
+    }
+
+    .side-menu button:hover {
+      background-color: #e67e00;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Inter', sans-serif;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+
+    th {
+      background-color: #ff8c00;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #ffe6cc;
+    }
+    
+
+    @media (max-width: 640px) {
+      .container {
+        margin: 40px 20px;
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- Botões flutuantes (mantidos como no original) -->
+<button id="btnRemoverUltimaLinha" style="
+  position: fixed;
+  bottom: 120px; /* ajustado para ficar acima */
+  right: 20px;
+  background-color: #ff8c00;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  z-index: 1500;
+  transition: background-color 0.3s ease;
+  ">Remover Última Linha</button>
+
+<button id="btnLimparTabela" style="
+  position: fixed;
+  bottom: 70px; /* ajustado para ficar acima */
+  right: 20px;
+  background-color: #ff8c00;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  z-index: 1500;
+  transition: background-color 0.3s ease;
+">Limpar Tabela</button>
+
+<button id="btnBaixarPlanilha" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ff8c00;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  z-index: 1500;
+  transition: background-color 0.3s ease;
+">Baixar Planilha</button>
+
+  <div class="top-right-buttons">
+    <button onclick="abrirMenu()">Ver opções</button>
+  </div>
+
+  <!-- Menu lateral oculto (mantido como no original) -->
+  <div class="side-menu" id="sideMenu">
+    <button onclick="fecharMenu()">Fechar</button>
+    <h3>Menu</h3>
+    <a href="{% url 'minha_pagina:home' %}"><button>Página inicial</button></a>
+    <a href="{% url 'minha_pagina:consumo_crb' %}"><button>Consumo de água</button></a>
+    <a href="{% url 'minha_pagina:consumo_gas' %}"><button>Consumo de gás</button></a>
+    <a href="{% url 'minha_pagina:consumo_energia' %}"><button>Consumo de energia</button></a>
+  </div>
+
+  <div class="container">
+    <div class="titulo-com-botoes">
+      <h1 id="tituloConsumo">Consumo de Água - Hotel</h1>
+      <!-- Botão Alterar Consumo removido ou desabilitado, pois a seleção agora é via menu -->
+    </div>
+
+    <!-- Formulário (mantido como no original) -->
+    <form id="consumoForm" method="post">
+      {% csrf_token %} <!-- Token CSRF já estava aqui -->
+      <input type="number" id="consumo_diario" name="consumo_diario" placeholder="Novo consumo (m³)" step="0.01" min="0" required />
+      <br />
+      <input type="number" id="apartamentos_ocupados" name="apartamentos_ocupados" placeholder="Quantidade de apartamentos ocupados" min="1" required />
+      <br />
+      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+        <button type="submit">Calcular</button>
+        <button type="button" onclick="registrarVolumeInicial()">Registrar Consumo inicial</button>
+      </div>
+    </form>
+
+    <div id="resultado" style="margin-top: 15px; font-weight: 600; color: #111b21;"></div>
+
+    <!-- Tabela para registrar cálculos de consumo -->
+    <div class="table-responsive">
+      <table id="tabela-consumo" class="table table-bordered table-hover text-center align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>N°</th>
+            <th id="thConsumoDiario">Consumo Diário (litros)</th>
+            <th>Apartamentos Ocupados</th>
+            <th id="thConsumoPorApartamento">Consumo por Apartamento (litros)</th>
+            <th>Data</th>
+            <th>Consumo inicial (m³)</th>
+            <th>Consumo Atual (m³) </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Linhas serão adicionadas aqui via JS buscando do backend -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  // --- Configurações e Variáveis Globais ---
+  const tabelaConsumoBody = document.querySelector("#tabela-consumo tbody");
+  const tituloConsumo = document.getElementById('tituloConsumo');
+  const inputConsumoDiario = document.getElementById('consumo_diario');
+  const thConsumoDiario = document.getElementById('thConsumoDiario');
+  const thConsumoPorApartamento = document.getElementById('thConsumoPorApartamento');
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const apiUrl = "{% url 'minha_pagina:api_registros_consumo' %}"; // URL da API para GET/POST
+  const removeUrl = "{% url 'minha_pagina:api_remover_ultimo_registro' %}";
+  const clearUrl = "{% url 'minha_pagina:api_limpar_registros' %}";
+  const initialVolumeUrl = "{% url 'minha_pagina:api_registrar_volume_inicial' %}";
+
+  let tipoConsumoAtual = 'Água'; // Tipo padrão para esta página
+  let registrosCache = []; // Cache local dos registros para evitar múltiplas buscas
+  let ultimoVolumeInicialRegistrado = null; // Armazena temporariamente o último volume inicial
+
+  // --- Funções Auxiliares --- 
+  function abrirMenu() {
+    document.getElementById("sideMenu").classList.add("open");
+  }
+
+  function fecharMenu() {
+    document.getElementById("sideMenu").classList.remove("open");
+  }
+
+  // Função para buscar dados da API
+  async function fetchRegistros(tipo) {
+    try {
+      const response = await fetch(`${apiUrl}?tipo=${encodeURIComponent(tipo)}`);
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      registrosCache = data; // Atualiza o cache
+      renderizarTabela(registrosCache);
+      // Tenta obter o último volume inicial dos dados carregados
+      const ultimoRegistroComVolumeInicial = registrosCache.slice().reverse().find(r => r.volume_inicial && r.volume_inicial !== '-');
+      if (ultimoRegistroComVolumeInicial) {
+          ultimoVolumeInicialRegistrado = parseFloat(ultimoRegistroComVolumeInicial.volume_inicial);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar registros:', error);
+      alert('Não foi possível carregar os registros. Tente novamente mais tarde.');
+    }
+  }
+
+  // Função para enviar dados para a API (POST)
+  async function postData(url, data) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao enviar dados:', error);
+      alert(`Erro: ${error.message}`);
+      return null; // Indica falha
+    }
+  }
+
+  // --- Renderização e UI ---
+  function renderizarTabela(registros) {
+    tabelaConsumoBody.innerHTML = ''; // Limpa a tabela
+    const registrosReversos = registros.slice().reverse(); // Mostra os mais recentes primeiro
+    registrosReversos.forEach((registro, index) => {
+      const numeroOriginal = registros.length - index;
+      const linha = document.createElement('tr');
+      // Ajusta para os nomes de campo retornados pela API
+      linha.innerHTML = `
+        <td>${numeroOriginal}</td>
+        <td>${registro.consumo !== null ? registro.consumo : '-'}</td>
+        <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
+        <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
+        <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+        <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
+        <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
+      `;
+      tabelaConsumoBody.appendChild(linha);
+    });
+  }
+
+  function atualizarUIparaTipo(tipo) {
+    tipoConsumoAtual = tipo;
+    tituloConsumo.textContent = `Consumo de ${tipo} - Hotel`;
+
+    // Ajusta placeholders e cabeçalhos da tabela
+    if (tipo === 'Água') {
+      inputConsumoDiario.placeholder = "Novo consumo (m³)";
+      thConsumoDiario.textContent = "Consumo Diário (litros)";
+      thConsumoPorApartamento.textContent = "Consumo por Apartamento (litros)";
+    } else if (tipo === 'Gás') {
+      inputConsumoDiario.placeholder = "Novo consumo (m³)";
+      thConsumoDiario.textContent = "Consumo Diário (m³)";
+      thConsumoPorApartamento.textContent = "Consumo por Apartamento (m³)";
+    } else if (tipo === 'Eletricidade') {
+      inputConsumoDiario.placeholder = "Consumo diário em kWh";
+      thConsumoDiario.textContent = "Consumo Diário (kWh)";
+      thConsumoPorApartamento.textContent = "Consumo por Apartamento (kWh)";
+    }
+
+    document.getElementById('resultado').textContent = '';
+    document.getElementById('consumoForm').reset();
+    fetchRegistros(tipoConsumoAtual); // Carrega dados do backend para o tipo selecionado
+  }
+
+  // --- Lógica de Cálculo e Manipulação de Dados ---
+
+  function obterVolumeAtualMaisRecente(tipo) {
+      // Busca no cache local primeiro
+      const registrosDoTipo = registrosCache.filter(r => r.tipo === tipo && r.volume_atual !== null && r.volume_atual !== '-');
+      if (registrosDoTipo.length > 0) {
+          // Ordena por data (assumindo que a API retorna ordenado, mas garantindo)
+          registrosDoTipo.sort((a, b) => new Date(b.data) - new Date(a.data) || b.id - a.id);
+          return parseFloat(registrosDoTipo[0].volume_atual);
+      }
+      // Se não encontrar no cache, tenta usar o último volume inicial registrado
+      if (ultimoVolumeInicialRegistrado !== null) {
+          return ultimoVolumeInicialRegistrado;
+      }
+      return null; // Nenhum volume anterior encontrado
+  }
+
+  async function registrarVolumeInicial() {
+      if (tipoConsumoAtual === 'Água' || tipoConsumoAtual === 'Gás') {
+          const unidade = tipoConsumoAtual === 'Água' ? 'm³' : 'm³';
+          const volumeInput = prompt(`Digite o consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
+          
+          if (volumeInput !== null && volumeInput.trim() !== "") {
+              const volume = parseFloat(volumeInput.replace(',', '.')); // Trata vírgula decimal
+              if (!isNaN(volume) && volume >= 0) {
+                  const volumeFormatado = volume.toFixed(2);
+                  
+                  // Envia para o backend (a view atual apenas confirma recebimento)
+                  const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
+                  
+                  if (result && result.success) {
+                      alert(`Consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} ${unidade}) registrado temporariamente. Será usado no próximo cálculo.`);
+                      ultimoVolumeInicialRegistrado = volume; // Armazena localmente para o próximo cálculo
+
+                      // Cria um registro visual na tabela com apenas o volume inicial
+                      const registroInicial = {
+                          tipo: tipoConsumoAtual,
+                          consumo: '-', // sem consumo ainda
+                          apartamentos: '-',
+                          consumo_por_apartamento: '-',
+                          data: new Date().toISOString().split('T')[0], // data atual
+                          volume_inicial: volumeFormatado,
+                          volume_atual: volumeFormatado // ainda não há volume atual
+                      };
+
+                      registrosCache.push(registroInicial); // adiciona ao cache local
+                      renderizarTabela(registrosCache);     // re-renderiza a tabela com o novo item
+                  } else {
+                      alert('Falha ao registrar o volume inicial no servidor.');
+                  }
+
+              } else {
+                  alert('Volume inválido. Por favor, insira um número positivo.');
+              }
+          } 
+      } else {
+          alert('O registro de volume inicial só é aplicável para Água e Gás.');
+      }
+  }
+
+  // --- Event Listeners ---
+  document.getElementById('consumoForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const novoVolumeAtualInput = document.getElementById('consumo_diario').value;
+    const apartamentosInput = document.getElementById('apartamentos_ocupados').value;
+
+    const apartamentos = parseInt(apartamentosInput);
+    const novoVolumeAtual = parseFloat(novoVolumeAtualInput.replace(',', '.'));
+
+    if (isNaN(apartamentos) || apartamentos <= 0) {
+      alert("A quantidade de apartamentos ocupados deve ser um número maior que zero.");
+      return;
+    }
+
+    if (isNaN(novoVolumeAtual) || novoVolumeAtual < 0) {
+      alert("Informe um volume atual válido (número positivo).");
+      return;
+    }
+
+    let consumoCalculado, volumeInicialUsado, volumeAnterior;
+
+    if (tipoConsumoAtual === 'Eletricidade') {
+      consumoCalculado = novoVolumeAtual; // Em eletricidade, o valor inserido é o consumo
+      volumeInicialUsado = '-';
+      volumeAnterior = '-'; // Não aplicável
+    } else {
+      volumeAnterior = obterVolumeAtualMaisRecente(tipoConsumoAtual);
+
+      if (volumeAnterior === null) {
+        alert(`Não há consumo inicial ou anterior registrado para ${tipoConsumoAtual}. Use o botão "Registrar Consumo inicial" primeiro.`);
+        return;
+      }
+      
+      if (novoVolumeAtual < volumeAnterior) {
+          alert(`O novo volume (${novoVolumeAtual.toFixed(2)}) não pode ser menor que o volume anterior (${volumeAnterior.toFixed(2)}). Verifique a leitura.`);
+          return;
+      }
+
+      consumoCalculado = (novoVolumeAtual - volumeAnterior) * 1000; // Convertendo m³ para litros (ou mantendo m³ para gás)
+      // Busca o primeiro volume inicial registrado para este tipo
+      const primeiroRegistro = registrosCache.find(r => r.tipo === tipoConsumoAtual && r.volume_inicial && r.volume_inicial !== '-');
+      volumeInicialUsado = primeiroRegistro ? primeiroRegistro.volume_inicial : (ultimoVolumeInicialRegistrado !== null ? ultimoVolumeInicialRegistrado.toFixed(2) : '-');
+    }
+
+    const consumoPorApartamento = apartamentos > 0 ? consumoCalculado / apartamentos : 0;
+
+    // Exibe resultado na tela
+    const unidadeResultado = tipoConsumoAtual === 'Água' ? 'litros' : (tipoConsumoAtual === 'Gás' ? 'm³' : 'kWh');
+    document.getElementById('resultado').textContent =
+      `Consumo médio de ${tipoConsumoAtual.toLowerCase()} por apartamento: ${consumoPorApartamento.toFixed(2)} ${unidadeResultado}`;
+
+    // Prepara dados para enviar à API
+    const novoRegistroData = {
+      tipo: tipoConsumoAtual,
+      consumo: consumoCalculado.toFixed(2),
+      apartamentos: apartamentos,
+      consumoPorApartamento: consumoPorApartamento.toFixed(2),
+      // Data é definida no backend (auto_now_add)
+      volumeInicial: volumeInicialUsado, // Usa o volume inicial encontrado
+      volumeAtual: tipoConsumoAtual === 'Eletricidade' ? '-' : novoVolumeAtual.toFixed(2)
+    };
+
+    // Envia o novo registro para o backend
+    const registroSalvo = await postData(apiUrl, novoRegistroData);
+
+    if (registroSalvo) {
+      // Atualiza o cache local e a tabela
+      registrosCache.push(registroSalvo);
+      renderizarTabela(registrosCache);
+      this.reset(); // Limpa o formulário
+      // Atualiza o último volume inicial se este foi o primeiro registro
+      if (registrosCache.filter(r => r.tipo === tipoConsumoAtual).length === 1 && registroSalvo.volume_inicial !== '-') {
+          ultimoVolumeInicialRegistrado = parseFloat(registroSalvo.volume_inicial);
+      }
+    } else {
+      alert('Falha ao salvar o registro no servidor.');
+    }
+  });
+
+  document.getElementById('btnRemoverUltimaLinha').addEventListener('click', async () => {
+    if (confirm(`Tem certeza que deseja remover o último registro de ${tipoConsumoAtual}?`)) {
+      const result = await postData(removeUrl, { tipo: tipoConsumoAtual });
+      if (result && result.success) {
+        alert(result.message);
+        fetchRegistros(tipoConsumoAtual); // Recarrega os dados
+      } else {
+        alert(result.message || 'Falha ao remover o último registro.');
+      }
+    }
+  });
+
+  document.getElementById('btnLimparTabela').addEventListener('click', async () => {
+    if (confirm(`Tem certeza que deseja limpar TODOS os registros de ${tipoConsumoAtual}? Esta ação não pode ser desfeita.`)) {
+      const result = await postData(clearUrl, { tipo: tipoConsumoAtual });
+      if (result && result.success) {
+        alert(result.message);
+        fetchRegistros(tipoConsumoAtual); // Recarrega os dados (devem estar vazios)
+        ultimoVolumeInicialRegistrado = null; // Limpa o volume inicial em memória
+      } else {
+        alert(result.message || 'Falha ao limpar os registros.');
+      }
+    }
+  });
+
+
+  // Carrega os registros salvos assim que a página for carregada
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchRegistros(tipoConsumoAtual);
+  });
+
+
+  function baixarTabelaComoExcel() {
+    const tabela = document.getElementById('tabela-consumo');
+    
+    // Clona a tabela para não alterar a original
+    const tabelaClone = tabela.cloneNode(true);
+
+    // Adiciona estilos de borda à tabela, às linhas e células
+    tabelaClone.setAttribute('border', '1');
+    tabelaClone.setAttribute('style', 'border-collapse: collapse;');
+
+    const linhas = tabelaClone.getElementsByTagName('tr');
+    for (let i = 0; i < linhas.length; i++) {
+      const celulas = linhas[i].children;
+      for (let j = 0; j < celulas.length; j++) {
+        celulas[j].setAttribute('style', 'border: 1px solid black; padding: 5px;');
+      }
+    }
+
+    const htmlTabela = tabelaClone.outerHTML;
+    const nomeArquivo = 'consumo_hotel_água.xls';
+    const tipoMime = 'application/vnd.ms-excel';
+
+    const blob = new Blob(['\ufeff' + htmlTabela], {
+      type: tipoMime
+    });
+
+    // Cria um link de download temporário
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nomeArquivo;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // Adiciona evento ao botão de download
+  document.getElementById('btnBaixarPlanilha').addEventListener('click', baixarTabelaComoExcel);
+
+
+</script>
+
+</body>
+</html>
+
