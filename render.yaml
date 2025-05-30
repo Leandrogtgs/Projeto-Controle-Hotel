@@ -3,7 +3,7 @@ services:
     name: projeto-django
     env: python
     buildCommand: ""
-    startCommand: gunicorn projeto_django_organizado.wsgi:application
+    startCommand: gunicorn meu_projeto.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: projeto_django_organizado.settings
