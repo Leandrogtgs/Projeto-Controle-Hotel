@@ -22,6 +22,19 @@ urlpatterns = [
     path('api/limpar-registros/', views.api_limpar_registros, name='api_limpar_registros'),
     path('api/registrar-volume-inicial/', views.api_registrar_volume_inicial, name='api_registrar_volume_inicial'),
 
+
+    # Rotas rvn
+    path('consumo-agua/', views.consumo_rvn, name='consumo_rvn'),
+
+
+
+    # Novas rotas para a API de consumo (AJAX) rvn
+    path('consumo_rvn/', views.consumo_rvn_view, name='consumo_rvn'),
+    path('api/rvn/registros/', views.api_registros_rvn, name='api_registros_rvn'),
+    path('api/rvn/remover_ultimo/', views.remover_ultimo_rvn, name='api_remover_ultimo_rvn'),
+    path('api/rvn/limpar/', views.limpar_tudo_rvn, name='api_limpar_rvn'),
+    path('api/rvn/volume_inicial/', views.registrar_volume_inicial_rvn, name='api_registrar_volume_inicial_rvn'),
+
     path('logout/', views.logout_view, name='logout'),
 ]
 

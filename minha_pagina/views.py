@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt # Consider using proper CSR
 import json
 from .models import RegistroConsumo
 
+from .models import ConsumoRVN
+
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
 
@@ -208,3 +210,95 @@ def api_registrar_volume_inicial(request):
 def logout_view(request):
     logout(request)
     return redirect('minha_pagina:login')
+
+
+
+
+
+
+
+# View para a página de consumo de água (rvn)
+@login_required
+def consumo_rvn(request):
+    # Simplesmente renderiza o template. A lógica de dados será via AJAX.
+    return render(request, 'minha_pagina/consumo_rvn.html')
+
+
+
+def consumo_rvn_view(request):
+    return render(request, 'minha_pagina/consumo_rvn.html')
+
+def api_registros_rvn(request):
+    if request.method == 'GET':
+        tipo = request.GET.get('tipo')
+        registros = ConsumoRVN.objects.filter(tipo=tipo).values()
+        return JsonResponse(list(registros), safe=False)
+
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        registro = ConsumoRVN.objects.create(
+            tipo=data.get('tipo'),
+            consumo=data.get('consumo'),
+            apartamentos=data.get('apartamentos'),
+            consumo_por_apartamento=data.get('consumoPorApartamento'),
+            volume_inicial=data.get('volumeInicial'),
+            volume_atual=data.get('volumeAtual')
+        )
+        return JsonResponse({
+            "id": registro.id,
+            "tipo": registro.tipo,
+            "consumo": str(registro.consumo),
+            "apartamentos": registro.apartamentos,
+            "consumo_por_apartamento": str(registro.consumo_por_apartamento),
+            "data": registro.data.strftime('%Y-%m-%d'),
+            "volume_inicial": str(registro.volume_inicial),
+            "volume_atual": str(registro.volume_atual)
+        })
+
+@csrf_exempt
+def remover_ultimo_rvn(request):
+    if request.method == 'POST':
+        tipo = json.loads(request.body).get('tipo')
+        ultimo = ConsumoRVN.objects.filter(tipo=tipo).last()
+        if ultimo:
+            ultimo.delete()
+            return JsonResponse({'success': True, 'message': 'Último registro removido.'})
+        return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado.'})
+
+@csrf_exempt
+def limpar_tudo_rvn(request):
+    if request.method == 'POST':
+        tipo = json.loads(request.body).get('tipo')
+        ConsumoRVN.objects.filter(tipo=tipo).delete()
+        return JsonResponse({'success': True, 'message': f'Todos os registros de {tipo} foram removidos.'})
+
+@csrf_exempt
+def registrar_volume_inicial_rvn(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        tipo = data.get('tipo')
+        volume = data.get('volumeInicial')
+
+        if tipo and volume:
+            registro = ConsumoRVN.objects.create(
+                tipo=tipo,
+                consumo=None,
+                apartamentos=None,
+                consumo_por_apartamento=None,
+                volume_inicial=volume,
+                volume_atual=volume
+            )
+            return JsonResponse({
+                "success": True,
+                "registro": {
+                    "id": registro.id,
+                    "tipo": registro.tipo,
+                    "consumo": "-",
+                    "apartamentos": "-",
+                    "consumo_por_apartamento": "-",
+                    "data": registro.data.strftime('%Y-%m-%d'),
+                    "volume_inicial": str(registro.volume_inicial),
+                    "volume_atual": str(registro.volume_atual)
+                }
+            })
+        return JsonResponse({'success': False, 'message': 'Dados incompletos'}, status=400)
