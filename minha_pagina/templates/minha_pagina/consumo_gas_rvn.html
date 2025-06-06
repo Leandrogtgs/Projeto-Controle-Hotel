@@ -1,0 +1,628 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consumo de Gás - Hotel RVN</title>
+  <link rel="stylesheet" href="{% static 'minha_pagina/style.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="csrf-token" content="{{ csrf_token }}"> <!-- Adiciona o token CSRF -->
+    <style>
+    body {
+        background-color: #ffffff;
+        color: #111b21;
+        font-family: 'Inter', sans-serif;
+        padding: 40px 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    .top-right-buttons {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1100;
+    }
+
+    .top-right-buttons button {
+        padding: 12px 24px;
+        background-color: #1e5631;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .top-right-buttons button:hover {
+        background-color: #174c27;
+    }
+
+    .container {
+        background-color: #f2f2f2;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        max-width: 900px;
+        box-sizing: border-box;
+        margin-top: 60px;
+        position: relative;
+        z-index: 1;
+        color: #111b21;
+    }
+
+    .titulo-com-botoes {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    h1 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 28px;
+    }
+
+    #botaoAlterarConsumo {
+        padding: 8px 16px;
+        background-color: #1e5631;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    #botaoAlterarConsumo:hover {
+        background-color: #174c27;
+    }
+
+    #botoesConsumoTipo {
+        display: none;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: center;
+    }
+
+    #botoesConsumoTipo button {
+        padding: 8px 16px;
+        background-color: #1e5631;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    #botoesConsumoTipo button:hover {
+        background-color: #174c27;
+    }
+
+    input[type="number"] {
+        width: 80%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background-color: #ffffff;
+        color: #111b21;
+        font-size: 16px;
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="number"]:focus {
+        border-color: #1e5631;
+        outline: none;
+    }
+
+    button[type="submit"],
+    button[type="button"] {
+        padding: 12px 25px;
+        background-color: #1e5631;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        margin-top: 10px;
+    }
+
+    button[type="submit"]:hover,
+    button[type="button"]:hover {
+        background-color: #174c27;
+    }
+
+    a {
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 15px;
+    }
+
+    .side-menu {
+        position: fixed;
+        top: 0;
+        right: -260px;
+        width: 250px;
+        height: 100%;
+        background-color: #f2f2f2;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        box-sizing: border-box;
+        transition: right 0.3s ease;
+        z-index: 2000;
+    }
+
+    .side-menu.open {
+        right: 0;
+    }
+
+    .side-menu h3 {
+        margin-top: 0;
+        text-align: center;
+        color: #111b21;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .side-menu a {
+        display: block;
+        margin: 15px 0;
+        color: #111b21;
+        text-decoration: none;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .side-menu button {
+        width: 100%;
+        background-color: #1e5631;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        font-family: 'Inter', sans-serif;
+        transition: background-color 0.3s ease;
+    }
+
+    .side-menu button:hover {
+        background-color: #174c27;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        margin-top: 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+
+    th {
+        background-color: #1e5631;
+        color: white;
+        font-weight: 600;
+    }
+
+    tr:hover {
+        background-color: #e1f3e8;
+    }
+
+    @media (max-width: 640px) {
+        .container {
+        margin: 40px 20px;
+        padding: 30px 20px;
+        }
+
+        h1 {
+        font-size: 24px;
+        }
+    }
+    </style>
+
+</head>
+<body>
+
+<!-- Botões flutuantes -->
+<button id="btnRemoverUltimaLinha" style="position: fixed; bottom: 120px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Remover Última Linha</button>
+<button id="btnLimparTabela" style="position: fixed; bottom: 70px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Limpar Tabela</button>
+<button id="btnBaixarPlanilha" style="position: fixed; bottom: 20px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Baixar Planilha</button>
+
+  <div class="top-right-buttons">
+    <button onclick="abrirMenu()">Ver opções</button>
+  </div>
+
+  <!-- Menu lateral -->
+  <div class="side-menu" id="sideMenu">
+    <button onclick="fecharMenu()">Fechar</button>
+    <h3>Menu</h3>
+    <a href="{% url 'minha_pagina:home' %}"><button>Página inicial</button></a>
+    <a href="{% url 'minha_pagina:consumo_rvn' %}"><button>Consumo de água</button></a>
+    <a href="{% url 'minha_pagina:consumo_gas_rvn' %}"><button>Consumo de gás</button></a>
+    <a href=""><button>Consumo de energia</button></a>
+  </div>
+
+  <div class="container">
+    <div class="titulo-com-botoes">
+      <h1 id="tituloConsumo">Consumo de Gás - Hotel RVN</h1>
+    </div>
+
+    <!-- Formulário -->
+    <form id="consumoForm" method="post">
+      {% csrf_token %}
+      <input type="number" id="consumo_diario" name="consumo_diario" placeholder="Novo Volume (%)" step="0.01" min="0" max="100" required />
+      <br />
+      <input type="number" id="apartamentos_ocupados" name="apartamentos_ocupados" placeholder="Quantidade de apartamentos ocupados" min="1" required />
+      <br />
+      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+        <button type="submit">Calcular</button>
+        <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 264.60 kg)</button>
+      </div>
+    </form>
+
+    <div id="resultado" style="margin-top: 15px; font-weight: 600; color: #111b21;"></div>
+
+    <!-- Tabela -->
+    <div class="table-responsive">
+      <table id="tabela-consumo" class="table table-bordered table-hover text-center align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>N°</th>
+            <th id="thConsumoDiario">Consumo Diário (kg)</th>
+            <th>Apartamentos Ocupados</th>
+            <th id="thConsumoPorApartamento">Consumo por Apartamento (kg)</th>
+            <th>Data</th>
+            <th>Volume Inicial (kg)</th>
+            <th>Volume Atual (kg)</th>
+            <th>Volume Atual (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Linhas via JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  // --- Configurações e Variáveis Globais ---
+  const tabelaConsumoBody = document.querySelector("#tabela-consumo tbody");
+  const tituloConsumo = document.getElementById('tituloConsumo');
+  const inputConsumoDiario = document.getElementById('consumo_diario'); // Input agora é % para Gás
+  const thConsumoDiario = document.getElementById('thConsumoDiario');
+  const thConsumoPorApartamento = document.getElementById('thConsumoPorApartamento');
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const apiUrl = "{% url 'minha_pagina:api_registros_rvn' %}";
+  const removeUrl = "{% url 'minha_pagina:api_remover_ultimo_rvn' %}";
+  const clearUrl = "{% url 'minha_pagina:api_limpar_rvn' %}";
+  const initialVolumeUrl = "{% url 'minha_pagina:api_registrar_volume_inicial_rvn' %}";
+
+  let tipoConsumoAtual = 'Gás'; // Fixo para esta página
+  let registrosCache = [];
+  let volumeInicialPadraoKg = 264.60; // Volume inicial padrão para gás em KG
+  let ultimoVolumeInicialRegistrado = null; // Armazena o volume inicial efetivamente usado
+
+  // --- Funções Auxiliares --- 
+  function abrirMenu() {
+    document.getElementById("sideMenu").classList.add("open");
+  }
+
+  function fecharMenu() {
+    document.getElementById("sideMenu").classList.remove("open");
+  }
+
+  async function fetchRegistros(tipo) {
+    try {
+      const response = await fetch(`${apiUrl}?tipo=${encodeURIComponent(tipo)}`);
+      if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+      const data = await response.json();
+      registrosCache = data;
+      // Tenta obter o último volume inicial dos dados carregados
+      const ultimoRegistroComVolumeInicial = registrosCache.slice().reverse().find(r => r.volume_inicial && r.volume_inicial !== '-');
+      if (ultimoRegistroComVolumeInicial) {
+          ultimoVolumeInicialRegistrado = parseFloat(ultimoRegistroComVolumeInicial.volume_inicial);
+      } else {
+          ultimoVolumeInicialRegistrado = volumeInicialPadraoKg; // Usa o padrão se nenhum for encontrado
+      }
+      renderizarTabela(registrosCache);
+    } catch (error) {
+      console.error('Erro ao buscar registros:', error);
+      alert('Não foi possível carregar os registros. Tente novamente mais tarde.');
+    }
+  }
+
+  async function postData(url, data) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao enviar dados:', error);
+      alert(`Erro: ${error.message}`);
+      return null;
+    }
+  }
+
+  function renderizarTabela(registros) {
+    tabelaConsumoBody.innerHTML = '';
+    const registrosReversos = registros.slice().reverse();
+    registrosReversos.forEach((registro, index) => {
+      const numeroOriginal = registros.length - index;
+
+      const volumeInicial = parseFloat(registro.volume_inicial);
+      const volumeAtual = parseFloat(registro.volume_atual);
+      let volumePorcentagem = '-';
+
+      if (!isNaN(volumeInicial) && volumeInicial > 0 && !isNaN(volumeAtual)) {
+        volumePorcentagem = ((volumeAtual / volumeInicial) * 100).toFixed(2) + '%';
+      }
+
+      const linha = document.createElement('tr');
+      linha.innerHTML = `
+        <td>${numeroOriginal}</td>
+        <td>${registro.consumo !== null ? registro.consumo : '-'}</td>
+        <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
+        <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
+        <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+        <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
+        <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
+        <td>${volumePorcentagem}</td>
+      `;
+      tabelaConsumoBody.appendChild(linha);
+    });
+  }
+
+  function atualizarUIparaTipo(tipo) {
+    tituloConsumo.textContent = `Consumo de ${tipo} - Hotel`;
+    inputConsumoDiario.placeholder = "Novo Volume (%)";
+    thConsumoDiario.textContent = "Consumo Diário (kg)";
+    thConsumoPorApartamento.textContent = "Consumo por Apartamento (kg)";
+    document.getElementById('resultado').textContent = '';
+    document.getElementById('consumoForm').reset();
+    fetchRegistros(tipo); // Carrega dados do backend
+  }
+
+  // --- Lógica de Cálculo e Manipulação de Dados ---
+  function obterVolumeAtualMaisRecente(tipo) {
+      const registrosDoTipo = registrosCache.filter(r => r.tipo === tipo && r.volume_atual !== null && r.volume_atual !== '-');
+      if (registrosDoTipo.length > 0) {
+          registrosDoTipo.sort((a, b) => new Date(b.data) - new Date(a.data) || b.id - a.id);
+          return parseFloat(registrosDoTipo[0].volume_atual);
+      }
+      // Se não houver registro anterior, usa o volume inicial conhecido
+      if (ultimoVolumeInicialRegistrado !== null) {
+          return ultimoVolumeInicialRegistrado;
+      }
+      return null; // Caso nem o inicial esteja definido
+  }
+
+  async function registrarVolumeInicial() {
+      const volumeInput = prompt(`O volume inicial padrão é ${volumeInicialPadraoKg.toFixed(2)} kg. Deseja usar este valor ou inserir um novo? Deixe em branco para usar o padrão.`, volumeInicialPadraoKg.toFixed(2));
+
+      let volumeParaRegistrar = volumeInicialPadraoKg;
+
+      if (volumeInput !== null && volumeInput.trim() !== "") {
+          const volume = parseFloat(volumeInput.replace(',', '.'));
+          if (!isNaN(volume) && volume >= 0) {
+              volumeParaRegistrar = volume;
+          } else {
+              alert('Volume inválido. Usando o valor padrão.');
+          }
+      }
+
+      const volumeFormatado = volumeParaRegistrar.toFixed(2);
+
+      const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
+
+      if (result && result.success) {
+          alert(`Volume inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} kg) registrado temporariamente. Será usado no próximo cálculo.`);
+          ultimoVolumeInicialRegistrado = volumeParaRegistrar;
+
+          // Sempre registra um novo item com o volume inicial e atual iguais
+          const registroInicialData = {
+              tipo: tipoConsumoAtual,
+              consumo: null,
+              apartamentos: null,
+              consumoPorApartamento: null,
+              volumeInicial: volumeFormatado,
+              volumeAtual: volumeFormatado
+          };
+
+          const registroSalvo = await postData(apiUrl, registroInicialData);
+          if (registroSalvo) {
+              fetchRegistros(tipoConsumoAtual); // Recarrega a tabela
+          }
+      } else {
+          alert('Falha ao registrar o volume inicial no servidor.');
+      }
+  }
+
+
+  
+
+  // --- Event Listeners ---
+  document.getElementById('consumoForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const percentualVolumeInput = document.getElementById('consumo_diario').value;
+    const apartamentosInput = document.getElementById('apartamentos_ocupados').value;
+
+    const apartamentos = parseInt(apartamentosInput);
+    const percentualVolume = parseFloat(percentualVolumeInput.replace(',', '.'));
+
+    if (isNaN(apartamentos) || apartamentos <= 0) {
+      alert("A quantidade de apartamentos ocupados deve ser um número maior que zero.");
+      return;
+    }
+
+    if (isNaN(percentualVolume) || percentualVolume < 0 || percentualVolume > 100) {
+      alert("Informe um valor percentual válido (0 a 100).");
+      return;
+    }
+
+    const volInicial = ultimoVolumeInicialRegistrado;
+    if (volInicial === null) {
+        alert("Volume inicial não definido. Clique em 'Registrar Volume Inicial' primeiro.");
+        return;
+    }
+
+    const novoVolumeAtualKg = (percentualVolume / 100) * volInicial;
+    const volumeAnteriorKg = obterVolumeAtualMaisRecente(tipoConsumoAtual);
+
+    if (volumeAnteriorKg === null) {
+      alert(`Não há volume anterior registrado para ${tipoConsumoAtual}. Registre o volume inicial.`);
+      return;
+    }
+
+    // Validação: O novo volume em KG não pode ser maior que o anterior
+    // No entanto, a entrada é em %, então a validação direta é mais complexa.
+    // Vamos confiar que o cálculo do consumo abaixo lida com isso.
+    // if (novoVolumeAtualKg > volumeAnteriorKg) { ... } // Pode ser útil em alguns casos
+
+    const consumoCalculadoKg = volumeAnteriorKg - novoVolumeAtualKg;
+
+    if (consumoCalculadoKg < 0) {
+        alert(`O cálculo resultou em consumo negativo (${consumoCalculadoKg.toFixed(2)} kg). Verifique o percentual informado ou o volume anterior.`);
+        // Isso pode acontecer se o volumeAnteriorKg for menor que novoVolumeAtualKg, 
+        // indicando um possível erro na sequência de registros ou no % informado.
+        return;
+    }
+
+    const consumoPorApartamentoKg = apartamentos > 0 ? consumoCalculadoKg / apartamentos : 0;
+
+    document.getElementById('resultado').textContent =
+      `Consumo médio de ${tipoConsumoAtual.toLowerCase()} por apartamento: ${consumoPorApartamentoKg.toFixed(2)} kg`;
+
+    const novoRegistroData = {
+      tipo: tipoConsumoAtual,
+      consumo: consumoCalculadoKg.toFixed(2),
+      apartamentos: apartamentos,
+      consumoPorApartamento: consumoPorApartamentoKg.toFixed(2),
+      volumeInicial: volInicial.toFixed(2),
+      volumeAtual: novoVolumeAtualKg.toFixed(2)
+    };
+
+    const registroSalvo = await postData(apiUrl, novoRegistroData);
+
+    if (registroSalvo) {
+      fetchRegistros(tipoConsumoAtual); // Recarrega dados após salvar
+      this.reset();
+    } else {
+      alert('Falha ao salvar o registro no servidor.');
+    }
+  });
+
+  document.getElementById('btnRemoverUltimaLinha').addEventListener('click', async () => {
+    if (confirm(`Tem certeza que deseja remover o último registro de ${tipoConsumoAtual}?`)) {
+      const result = await postData(removeUrl, { tipo: tipoConsumoAtual });
+      if (result && result.success) {
+        alert(result.message);
+        fetchRegistros(tipoConsumoAtual);
+      } else {
+        alert(result.message || 'Falha ao remover o último registro.');
+      }
+    }
+  });
+
+  document.getElementById('btnLimparTabela').addEventListener('click', async () => {
+    if (confirm(`Tem certeza que deseja limpar TODOS os registros de ${tipoConsumoAtual}? Esta ação não pode ser desfeita.`)) {
+      const result = await postData(clearUrl, { tipo: tipoConsumoAtual });
+      if (result && result.success) {
+        alert(result.message);
+        fetchRegistros(tipoConsumoAtual);
+        ultimoVolumeInicialRegistrado = volumeInicialPadraoKg; // Reseta para o padrão
+      } else {
+        alert(result.message || 'Falha ao limpar os registros.');
+      }
+    }
+  });
+
+
+  // --- Inicialização ---
+  document.addEventListener('DOMContentLoaded', () => {
+    atualizarUIparaTipo(tipoConsumoAtual);
+  });
+
+
+  function baixarTabelaComoExcel() {
+    const tabela = document.getElementById('tabela-consumo');
+    
+    // Clona a tabela para não alterar a original
+    const tabelaClone = tabela.cloneNode(true);
+
+    // Adiciona estilos de borda à tabela, às linhas e células
+    tabelaClone.setAttribute('border', '1');
+    tabelaClone.setAttribute('style', 'border-collapse: collapse;');
+
+    const linhas = tabelaClone.getElementsByTagName('tr');
+    for (let i = 0; i < linhas.length; i++) {
+      const celulas = linhas[i].children;
+      for (let j = 0; j < celulas.length; j++) {
+        celulas[j].setAttribute('style', 'border: 1px solid black; padding: 5px;');
+      }
+    }
+
+    const htmlTabela = tabelaClone.outerHTML;
+    const nomeArquivo = 'consumo_hotel_gás.xls';
+    const tipoMime = 'application/vnd.ms-excel';
+
+    const blob = new Blob(['\ufeff' + htmlTabela], {
+      type: tipoMime
+    });
+
+    // Cria um link de download temporário
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nomeArquivo;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // Adiciona evento ao botão de download
+  document.getElementById('btnBaixarPlanilha').addEventListener('click', baixarTabelaComoExcel);
+
+
+
+</script>
+
+
+</body>
+</html>
+
