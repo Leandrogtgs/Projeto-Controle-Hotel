@@ -3,255 +3,218 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Consumo de Gás - Hotel RVN</title>
+  <title>Consumo de Gás - Hotel</title>
   <link rel="stylesheet" href="{% static 'minha_pagina/style.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <meta name="csrf-token" content="{{ csrf_token }}"> <!-- Adiciona o token CSRF -->
-    <style>
-    body {
-        background-color: #ffffff;
-        color: #111b21;
-        font-family: 'Inter', sans-serif;
-        padding: 40px 0;
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        position: relative;
-    }
+<style>
+  /* Estilos CSS (modificados para verde escuro) */
+  body {
+    background-color: #ffffff;
+    color: #111b21;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    position: relative;
+  }
 
-    .top-right-buttons {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1100;
-    }
+  .top-right-buttons {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1100;
+  }
 
-    .top-right-buttons button {
-        padding: 12px 24px;
-        background-color: #1e5631;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    }
+  .top-right-buttons button {
+    padding: 12px 24px;
+    background-color: #006400; /* verde escuro */
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+  }
 
-    .top-right-buttons button:hover {
-        background-color: #174c27;
-    }
+  .top-right-buttons button:hover {
+    background-color: #004d00;
+  }
 
+  .container {
+    background-color: #f2f2f2;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 1000px;
+    box-sizing: border-box;
+    margin-top: 60px;
+    position: relative;
+    z-index: 1;
+    color: #111b21;
+  }
+
+  .titulo-com-botoes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 28px;
+  }
+
+  input[type="number"] {
+    width: 80%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    color: #111b21;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+  }
+
+  input[type="number"]:focus {
+    border-color: #006400;
+    outline: none;
+  }
+
+  button[type="submit"],
+  button[type="button"] {
+    padding: 12px 25px;
+    background-color: #006400;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    margin-top: 10px;
+  }
+
+  button[type="submit"]:hover,
+  button[type="button"]:hover {
+    background-color: #004d00;
+  }
+
+  a {
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 15px;
+  }
+
+  /* Menu lateral */
+  .side-menu {
+    position: fixed;
+    top: 0;
+    right: -260px;
+    width: 250px;
+    height: 100%;
+    background-color: #f2f2f2;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-sizing: border-box;
+    transition: right 0.3s ease;
+    z-index: 2000;
+  }
+
+  .side-menu.open {
+    right: 0;
+  }
+
+  .side-menu h3 {
+    margin-top: 0;
+    text-align: center;
+    color: #111b21;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .side-menu a {
+    display: block;
+    margin: 15px 0;
+    color: #111b21;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .side-menu button {
+    width: 100%;
+    background-color: #006400;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease;
+  }
+
+  .side-menu button:hover {
+    background-color: #004d00;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    margin-top: 30px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', sans-serif;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+
+  th {
+    background-color: #006400;
+    color: white;
+    font-weight: 600;
+  }
+
+  tr:hover {
+    background-color: #e6ffe6;
+  }
+
+  @media (max-width: 640px) {
     .container {
-        background-color: #f2f2f2;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 100%;
-        max-width: 900px;
-        box-sizing: border-box;
-        margin-top: 60px;
-        position: relative;
-        z-index: 1;
-        color: #111b21;
-    }
-
-    .titulo-com-botoes {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
+      margin: 40px 20px;
+      padding: 30px 20px;
     }
 
     h1 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 28px;
+      font-size: 24px;
     }
-
-    #botaoAlterarConsumo {
-        padding: 8px 16px;
-        background-color: #1e5631;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    }
-
-    #botaoAlterarConsumo:hover {
-        background-color: #174c27;
-    }
-
-    #botoesConsumoTipo {
-        display: none;
-        gap: 10px;
-        margin-top: 10px;
-        justify-content: center;
-    }
-
-    #botoesConsumoTipo button {
-        padding: 8px 16px;
-        background-color: #1e5631;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-family: 'Inter', sans-serif;
-    }
-
-    #botoesConsumoTipo button:hover {
-        background-color: #174c27;
-    }
-
-    input[type="number"] {
-        width: 80%;
-        padding: 12px;
-        margin-bottom: 20px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        background-color: #ffffff;
-        color: #111b21;
-        font-size: 16px;
-        font-family: 'Inter', sans-serif;
-        box-sizing: border-box;
-        transition: border-color 0.3s ease;
-    }
-
-    input[type="number"]:focus {
-        border-color: #1e5631;
-        outline: none;
-    }
-
-    button[type="submit"],
-    button[type="button"] {
-        padding: 12px 25px;
-        background-color: #1e5631;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-family: 'Inter', sans-serif;
-        margin-top: 10px;
-    }
-
-    button[type="submit"]:hover,
-    button[type="button"]:hover {
-        background-color: #174c27;
-    }
-
-    a {
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 15px;
-    }
-
-    .side-menu {
-        position: fixed;
-        top: 0;
-        right: -260px;
-        width: 250px;
-        height: 100%;
-        background-color: #f2f2f2;
-        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        box-sizing: border-box;
-        transition: right 0.3s ease;
-        z-index: 2000;
-    }
-
-    .side-menu.open {
-        right: 0;
-    }
-
-    .side-menu h3 {
-        margin-top: 0;
-        text-align: center;
-        color: #111b21;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .side-menu a {
-        display: block;
-        margin: 15px 0;
-        color: #111b21;
-        text-decoration: none;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .side-menu button {
-        width: 100%;
-        background-color: #1e5631;
-        border: none;
-        padding: 10px;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        margin-bottom: 10px;
-        font-family: 'Inter', sans-serif;
-        transition: background-color 0.3s ease;
-    }
-
-    .side-menu button:hover {
-        background-color: #174c27;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-        margin-top: 30px;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: 'Inter', sans-serif;
-    }
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-    }
-
-    th {
-        background-color: #1e5631;
-        color: white;
-        font-weight: 600;
-    }
-
-    tr:hover {
-        background-color: #e1f3e8;
-    }
-
-    @media (max-width: 640px) {
-        .container {
-        margin: 40px 20px;
-        padding: 30px 20px;
-        }
-
-        h1 {
-        font-size: 24px;
-        }
-    }
-    </style>
+  }
+</style>
 
 </head>
 <body>
 
 <!-- Botões flutuantes -->
-<button id="btnRemoverUltimaLinha" style="position: fixed; bottom: 120px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Remover Última Linha</button>
-<button id="btnLimparTabela" style="position: fixed; bottom: 70px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Limpar Tabela</button>
-<button id="btnBaixarPlanilha" style="position: fixed; bottom: 20px; right: 20px; background-color: #1e5631; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Baixar Planilha</button>
+<button id="btnRemoverUltimaLinha" style="position: fixed; bottom: 120px; right: 20px; background-color: #006400; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Remover Última Linha</button>
+<button id="btnLimparTabela" style="position: fixed; bottom: 70px; right: 20px; background-color: #006400; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Limpar Tabela</button>
+<button id="btnBaixarPlanilha" style="position: fixed; bottom: 20px; right: 20px; background-color: #006400; border: none; border-radius: 8px; color: white; font-size: 16px; padding: 12px 24px; cursor: pointer; font-family: 'Inter', sans-serif; z-index: 1500; transition: background-color 0.3s ease;">Baixar Planilha</button>
 
   <div class="top-right-buttons">
     <button onclick="abrirMenu()">Ver opções</button>
@@ -264,12 +227,12 @@
     <a href="{% url 'minha_pagina:home' %}"><button>Página inicial</button></a>
     <a href="{% url 'minha_pagina:consumo_rvn' %}"><button>Consumo de água</button></a>
     <a href="{% url 'minha_pagina:consumo_gas_rvn' %}"><button>Consumo de gás</button></a>
-    <a href=""><button>Consumo de energia</button></a>
+    <a href="{% url 'minha_pagina:consumo_energia_rvn' %}"><button>Consumo de energia</button></a>
   </div>
 
   <div class="container">
     <div class="titulo-com-botoes">
-      <h1 id="tituloConsumo">Consumo de Gás - Hotel RVN</h1>
+      <h1 id="tituloConsumo">Consumo de Gás - Hotel</h1>
     </div>
 
     <!-- Formulário -->
@@ -281,7 +244,7 @@
       <br />
       <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
         <button type="submit">Calcular</button>
-        <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 264.60 kg)</button>
+        <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 264.40 kg)</button>
       </div>
     </form>
 
@@ -324,7 +287,7 @@
 
   let tipoConsumoAtual = 'Gás'; // Fixo para esta página
   let registrosCache = [];
-  let volumeInicialPadraoKg = 264.60; // Volume inicial padrão para gás em KG
+  let volumeInicialPadraoKg = 264.40; // Volume inicial padrão para gás em KG
   let ultimoVolumeInicialRegistrado = null; // Armazena o volume inicial efetivamente usado
 
   // --- Funções Auxiliares --- 
@@ -450,27 +413,16 @@
       const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
 
       if (result && result.success) {
-          alert(`Volume inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} kg) registrado temporariamente. Será usado no próximo cálculo.`);
+          alert(`Volume inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} kg) registrado com sucesso.`);
           ultimoVolumeInicialRegistrado = volumeParaRegistrar;
 
-          // Sempre registra um novo item com o volume inicial e atual iguais
-          const registroInicialData = {
-              tipo: tipoConsumoAtual,
-              consumo: null,
-              apartamentos: null,
-              consumoPorApartamento: null,
-              volumeInicial: volumeFormatado,
-              volumeAtual: volumeFormatado
-          };
-
-          const registroSalvo = await postData(apiUrl, registroInicialData);
-          if (registroSalvo) {
-              fetchRegistros(tipoConsumoAtual); // Recarrega a tabela
-          }
+          // Removido o segundo postData para evitar duplicação
+          fetchRegistros(tipoConsumoAtual); // Recarrega a tabela
       } else {
           alert('Falha ao registrar o volume inicial no servidor.');
       }
   }
+
 
 
   
