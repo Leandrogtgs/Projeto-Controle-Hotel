@@ -261,7 +261,7 @@ def api_registros_rvn(request):
             tipo=data.get('tipo'),
             consumo=data.get('consumo'),
             apartamentos=data.get('apartamentos'),
-            consumo_por_apartamento=data.get('consumo_por_apartamento'),
+            consumo_por_apartamento=data.get('consumoPorApartamento'),
             volume_inicial=data.get('volumeInicial'),
             volume_atual=data.get('volumeAtual')
         )
