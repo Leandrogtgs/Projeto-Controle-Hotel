@@ -230,10 +230,24 @@ def consumo_gas_rvn(request):
     return render(request, 'minha_pagina/consumo_gas_rvn.html')
 
 
+# View para a página de consumo de energia (rvn)
+@login_required
+def consumo_energia_rvn(request):
+    # Simplesmente renderiza o template. A lógica de dados será via AJAX.
+    return render(request, 'minha_pagina/consumo_energia_rvn.html')
 
 
+
+@login_required
 def consumo_rvn_view(request):
     return render(request, 'minha_pagina/consumo_rvn.html')
+
+
+@login_required
+def consumo_energia_rvn_view(request):
+    return render(request, 'minha_pagina/consumo_energia_rvn.html')
+
+
 
 def api_registros_rvn(request):
     if request.method == 'GET':
@@ -309,3 +323,6 @@ def registrar_volume_inicial_rvn(request):
                 }
             })
         return JsonResponse({'success': False, 'message': 'Dados incompletos'}, status=400)
+    
+
+
