@@ -25,11 +25,15 @@ urlpatterns = [
 
     # Rotas rvn
     path('consumo-agua/', views.consumo_rvn, name='consumo_rvn'),
+    path('consumo-gas/', views.consumo_gas_rvn, name='consumo_gas_rvn'),
+    path('consumo-energia/', views.consumo_energia_rvn, name='consumo_energia_rvn'),
 
 
 
     # Novas rotas para a API de consumo (AJAX) rvn
     path('consumo_rvn/', views.consumo_rvn_view, name='consumo_rvn'),
+    path('consumo-gas-rvn/', views.consumo_gas_rvn, name='consumo_gas_rvn'),
+    path('consumo-energia-rvn/', views.consumo_energia_rvn_view, name='consumo_energia_rvn'),
     path('api/rvn/registros/', views.api_registros_rvn, name='api_registros_rvn'),
     path('api/rvn/remover_ultimo/', views.remover_ultimo_rvn, name='api_remover_ultimo_rvn'),
     path('api/rvn/limpar/', views.limpar_tudo_rvn, name='api_limpar_rvn'),
