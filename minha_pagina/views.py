@@ -261,7 +261,7 @@ def api_registros_rvn(request):
             tipo=data.get('tipo'),
             consumo=data.get('consumo'),
             apartamentos=data.get('apartamentos'),
-            consumo_por_apartamento=data.get('consumoPorApartamento'),
+            consumo_por_apartamento=data.get('consumo_por_apartamento'),
             volume_inicial=data.get('volumeInicial'),
             volume_atual=data.get('volumeAtual')
         )
@@ -275,16 +275,24 @@ def api_registros_rvn(request):
             "volume_inicial": str(registro.volume_inicial),
             "volume_atual": str(registro.volume_atual)
         })
+    
 
 @csrf_exempt
 def remover_ultimo_rvn(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipo')
-        ultimo = ConsumoRVN.objects.filter(tipo=tipo).last()
+        if not tipo:
+            return JsonResponse({'success': False, 'message': 'Tipo não informado.'})
+        
+        ultimo = ConsumoRVN.objects.filter(tipo=tipo).order_by('-data', '-id').first()
         if ultimo:
             ultimo.delete()
-            return JsonResponse({'success': True, 'message': 'Último registro removido.'})
-        return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado.'})
+            return JsonResponse({'success': True, 'message': 'Último registro removido com sucesso.'})
+        return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado para remover.'})
+    
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+
 
 @csrf_exempt
 def limpar_tudo_rvn(request):

@@ -340,9 +340,21 @@
   // --- Renderização e UI ---
   function renderizarTabela(registros) {
     tabelaConsumoBody.innerHTML = '';
-    const registrosReversos = registros.slice().reverse();
-    registrosReversos.forEach((registro, index) => {
-      const numeroOriginal = registros.length - index;
+
+    // Ordena os registros por data decrescente, e depois por id decrescente (como desempate)
+    const registrosOrdenados = registros.slice().sort((a, b) => {
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+
+      if (dataA > dataB) return -1;
+      if (dataA < dataB) return 1;
+
+      // Se as datas forem iguais, desempata pelo id (assumindo que existe id numérico)
+      return (b.id || 0) - (a.id || 0);
+    });
+
+    registrosOrdenados.forEach((registro, index) => {
+      const numeroOriginal = registrosOrdenados.length - index;
       const linha = document.createElement('tr');
       linha.innerHTML = `
         <td>${numeroOriginal}</td>
@@ -350,8 +362,8 @@
         <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
         <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
         <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
-        <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td> <!-- Leitura Inicial -->
-        <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td> <!-- Leitura Atual -->
+        <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
+        <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
       `;
       tabelaConsumoBody.appendChild(linha);
     });
@@ -381,7 +393,7 @@
       return null; // Caso nem a inicial esteja definida
   }
 
-  async function registrarVolumeInicial() { // Adaptado para Leitura Inicial
+  async function registrarVolumeInicial() {
       const unidade = 'kWh';
       const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
 
@@ -393,28 +405,18 @@
               // Envia para o backend (reutilizando a view de volume inicial)
               const result = await postData(initialVolumeUrl, {
                   tipo: tipoConsumoAtual,
-                  volumeInicial: leituraFormatada // volumeInicial usado para leitura inicial
+                  volumeInicial: leituraFormatada
               });
 
               if (result && result.success) {
                   alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${leituraFormatada} ${unidade}) registrada.`);
 
-                  ultimaLeituraInicialRegistrada = leitura; // Atualiza localmente
+                  ultimaLeituraInicialRegistrada = leitura;
 
-                  // Sempre cria um novo registro com leitura inicial
-                  const registroInicialData = {
-                      tipo: tipoConsumoAtual,
-                      consumo: null,
-                      apartamentos: null,
-                      consumoPorApartamento: null,
-                      volumeInicial: leituraFormatada,
-                      volumeAtual: leituraFormatada
-                  };
+                  // *** Removi a criação do registro extra para evitar duplicação ***
+                  // Antes: criação do registro inicial duplicado
 
-                  const registroSalvo = await postData(apiUrl, registroInicialData);
-                  if (registroSalvo) {
-                      fetchRegistros(tipoConsumoAtual); // Recarrega para mostrar o registro
-                  }
+                  fetchRegistros(tipoConsumoAtual); // Atualiza a tabela para mostrar o registro
               } else {
                   alert('Falha ao registrar a leitura inicial no servidor.');
               }
@@ -471,7 +473,7 @@
       tipo: tipoConsumoAtual,
       consumo: consumoCalculadoKWh.toFixed(2),
       apartamentos: apartamentos,
-      consumoPorApartamento: consumoPorApartamentoKWh.toFixed(2),
+      consumo_por_apartamento: consumoPorApartamentoKWh.toFixed(2),
       volumeInicial: leituraInicialUsada, // Campo reutilizado para Leitura Inicial
       volumeAtual: novaLeituraKWh.toFixed(2) // Campo reutilizado para Leitura Atual
     };
