@@ -280,11 +280,16 @@ def api_registros_rvn(request):
 def remover_ultimo_rvn(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipo')
-        ultimo = ConsumoRVN.objects.filter(tipo=tipo).last()
+        if not tipo:
+            return JsonResponse({'success': False, 'message': 'Tipo não informado.'})
+        
+        ultimo = ConsumoRVN.objects.filter(tipo=tipo).order_by('-data', '-id').first()
         if ultimo:
             ultimo.delete()
-            return JsonResponse({'success': True, 'message': 'Último registro removido.'})
-        return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado.'})
+            return JsonResponse({'success': True, 'message': 'Último registro removido com sucesso.'})
+        return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado para remover.'})
+    
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
 
 @csrf_exempt
 def limpar_tudo_rvn(request):
