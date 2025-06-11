@@ -275,7 +275,6 @@ def api_registros_rvn(request):
             "volume_inicial": str(registro.volume_inicial),
             "volume_atual": str(registro.volume_atual)
         })
-    
 
 @csrf_exempt
 def remover_ultimo_rvn(request):
@@ -291,11 +290,6 @@ def remover_ultimo_rvn(request):
         return JsonResponse({'success': False, 'message': 'Nenhum registro encontrado para remover.'})
     
     return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
-<<<<<<< HEAD
-=======
-
-
->>>>>>> a595be0564d55414d825151ef87d04a1b3a038b5
 
 @csrf_exempt
 def limpar_tudo_rvn(request):
