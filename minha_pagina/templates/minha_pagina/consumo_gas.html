@@ -408,30 +408,27 @@
 
       const volumeFormatado = volumeParaRegistrar.toFixed(2);
 
-      const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
+      const registroInicialData = {
+          tipo: tipoConsumoAtual,
+          consumo: '-',
+          apartamentos: '-',
+          consumoPorApartamento: '-',
+          volumeInicial: volumeFormatado,
+          volumeAtual: volumeFormatado
+      };
 
-      if (result && result.success) {
-          alert(`Volume inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} kg) registrado temporariamente. Será usado no próximo cálculo.`);
+      // Registra o volume inicial como o primeiro e único registro visível
+      const registroSalvo = await postData(apiUrl, registroInicialData);
+
+      if (registroSalvo) {
+          alert(`Volume inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} kg) registrado com sucesso.`);
           ultimoVolumeInicialRegistrado = volumeParaRegistrar;
-
-          // Sempre registra um novo item com o volume inicial e atual iguais
-          const registroInicialData = {
-              tipo: tipoConsumoAtual,
-              consumo: '-',
-              apartamentos: '-',
-              consumoPorApartamento: '-',
-              volumeInicial: volumeFormatado,
-              volumeAtual: volumeFormatado
-          };
-
-          const registroSalvo = await postData(apiUrl, registroInicialData);
-          if (registroSalvo) {
-              fetchRegistros(tipoConsumoAtual); // Recarrega a tabela
-          }
+          fetchRegistros(tipoConsumoAtual); // Atualiza a tabela
       } else {
           alert('Falha ao registrar o volume inicial no servidor.');
       }
   }
+
 
 
   

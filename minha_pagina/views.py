@@ -158,52 +158,63 @@ def api_limpar_registros(request):
         print(f"Erro ao limpar registros: {e}")
         return JsonResponse({'error': 'Erro interno ao limpar registros'}, status=500)
 
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from .models import RegistroConsumo  # ajuste conforme o nome do seu modelo
+import json
+
+@csrf_exempt  # REMOVER EM PRODUÇÃO
 @login_required
-@require_http_methods(["POST"]) 
-@csrf_exempt # REMOVER EM PRODUÇÃO E USAR CSRF TOKEN NO AJAX
+@require_http_methods(["POST"])
 def api_registrar_volume_inicial(request):
     try:
         data = json.loads(request.body)
         tipo_consumo = data.get('tipo')
         volume_inicial = data.get('volumeInicial')
 
-        if not tipo_consumo or tipo_consumo not in ['Água', 'Gás', 'Eletricidade']:
-             return JsonResponse({'error': 'Tipo de consumo inválido ou não suportado para volume inicial.'}, status=400)
-        
+        if not tipo_consumo or tipo_consumo not in ['Água', 'Gás']:
+            return JsonResponse({'error': 'Tipo de consumo inválido ou não suportado para volume inicial.'}, status=400)
+
         try:
             volume_inicial_float = float(volume_inicial)
             if volume_inicial_float < 0:
-                 raise ValueError("Volume inicial não pode ser negativo.")
+                raise ValueError("Volume inicial não pode ser negativo.")
         except (ValueError, TypeError):
             return JsonResponse({'error': 'Volume inicial inválido.'}, status=400)
 
-        # Aqui, em vez de salvar no localStorage, poderíamos salvar em um model separado 
-        # ou talvez atualizar o último registro existente se fizer sentido, 
-        # ou ainda ter um campo específico no perfil do usuário.
-        # Por simplicidade, vamos apenas retornar sucesso, assumindo que o frontend 
-        # usará essa informação temporariamente ou a enviará junto com o próximo registro.
-        # Uma abordagem mais robusta seria salvar isso no banco.
-        # Exemplo: Atualizar um campo 'ultimo_volume_inicial' no perfil do usuário
-        # request.user.profile.update_volume_inicial(tipo_consumo, volume_inicial_float)
-        
-        # *** Implementação Simplificada: Apenas confirma recebimento ***
-        # O frontend precisará gerenciar como usar esse valor.
-        # Idealmente, isso seria salvo no backend de forma persistente.
+        # Cria o registro com volume inicial
+        registro = RegistroConsumo.objects.create(
+            tipo=tipo_consumo,
+            volume_inicial=volume_inicial_float,
+            volume_atual=volume_inicial_float,
+            consumo=None,
+            apartamentos=None,
+            consumo_por_apartamento=None,
+            usuario=request.user
+        )
 
-        # Criando um registro inicial apenas com o volume?
-        # Ou apenas armazenando para usar no próximo cálculo?
-        # Vamos criar um registro especial para marcar o início?
-        # Por ora, vamos apenas retornar sucesso.
-        # TODO: Definir como persistir o volume inicial de forma robusta no backend.
-
-        return JsonResponse({'success': True, 'message': f'Volume inicial {volume_inicial_float:.2f} para {tipo_consumo} recebido.'})
+        return JsonResponse({
+            'success': True,
+            'registro': {
+                'id': registro.id,
+                'tipo': registro.tipo,
+                'consumo': '-' if registro.consumo is None else f"{registro.consumo:.2f}",
+                'apartamentos': '-' if registro.apartamentos is None else registro.apartamentos,
+                'consumo_por_apartamento': '-' if registro.consumo_por_apartamento is None else f"{registro.consumo_por_apartamento:.2f}",
+                'data': registro.data.strftime('%Y-%m-%d'),
+                'volume_inicial': f"{registro.volume_inicial:.2f}",
+                'volume_atual': f"{registro.volume_atual:.2f}"
+            }
+        })
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'JSON inválido'}, status=400)
     except Exception as e:
         print(f"Erro ao registrar volume inicial: {e}")
         return JsonResponse({'error': 'Erro interno ao registrar volume inicial'}, status=500)
-
 
 @login_required
 @require_POST

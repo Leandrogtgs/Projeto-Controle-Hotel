@@ -488,48 +488,51 @@
       return null; // Nenhum volume anterior encontrado
   }
 
-  async function registrarVolumeInicial() {
+    async function registrarVolumeInicial() {
       if (tipoConsumoAtual === 'Água' || tipoConsumoAtual === 'Gás') {
-          const unidade = tipoConsumoAtual === 'Água' ? 'm³' : 'm³';
+          const unidade = 'm³';
           const volumeInput = prompt(`Digite o consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
           
           if (volumeInput !== null && volumeInput.trim() !== "") {
-              const volume = parseFloat(volumeInput.replace(',', '.')); // Trata vírgula decimal
+              const volume = parseFloat(volumeInput.replace(',', '.'));
               if (!isNaN(volume) && volume >= 0) {
                   const volumeFormatado = volume.toFixed(2);
-                  
-                  // Envia para o backend (a view atual apenas confirma recebimento)
-                  const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
-                  
-                  if (result && result.success) {
-                      alert(`Consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} ${unidade}) registrado temporariamente. Será usado no próximo cálculo.`);
-                      ultimoVolumeInicialRegistrado = volume; // Armazena localmente para o próximo cálculo
 
-                      // Cria um registro visual na tabela com apenas o volume inicial
-                      const registroInicial = {
+                  const result = await postData(initialVolumeUrl, {
+                      tipo: tipoConsumoAtual,
+                      volumeInicial: volumeFormatado
+                  });
+
+                  if (result && result.success) {
+                      alert(`Consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} ${unidade}) registrado com sucesso.`);
+
+                      ultimoVolumeInicialRegistrado = volume;
+
+                      // Adiciona novo registro ao cache e atualiza a tabela
+                      const novoRegistro = {
                           tipo: tipoConsumoAtual,
-                          consumo: '-', // sem consumo ainda
+                          consumo: '-', // ainda não há consumo
                           apartamentos: '-',
                           consumo_por_apartamento: '-',
-                          data: new Date().toISOString().split('T')[0], // data atual
+                          data: new Date().toISOString().split('T')[0],
                           volume_inicial: volumeFormatado,
-                          volume_atual: volumeFormatado // ainda não há volume atual
+                          volume_atual: volumeFormatado
                       };
 
-                      registrosCache.push(registroInicial); // adiciona ao cache local
-                      renderizarTabela(registrosCache);     // re-renderiza a tabela com o novo item
+                      registrosCache.push(novoRegistro);
+                      renderizarTabela(registrosCache);
                   } else {
                       alert('Falha ao registrar o volume inicial no servidor.');
                   }
-
               } else {
                   alert('Volume inválido. Por favor, insira um número positivo.');
               }
-          } 
+          }
       } else {
           alert('O registro de volume inicial só é aplicável para Água e Gás.');
       }
   }
+
 
   // --- Event Listeners ---
   document.getElementById('consumoForm').addEventListener('submit', async function(event) {
@@ -564,17 +567,23 @@
         alert(`Não há consumo inicial ou anterior registrado para ${tipoConsumoAtual}. Use o botão "Registrar Consumo inicial" primeiro.`);
         return;
       }
-      
+
       if (novoVolumeAtual < volumeAnterior) {
-          alert(`O novo volume (${novoVolumeAtual.toFixed(2)}) não pode ser menor que o volume anterior (${volumeAnterior.toFixed(2)}). Verifique a leitura.`);
-          return;
+        alert(`O novo volume (${novoVolumeAtual.toFixed(2)}) não pode ser menor que o volume anterior (${volumeAnterior.toFixed(2)}). Verifique a leitura.`);
+        return;
       }
 
-      consumoCalculado = (novoVolumeAtual - volumeAnterior) * 1000; // Convertendo m³ para litros (ou mantendo m³ para gás)
-      // Busca o primeiro volume inicial registrado para este tipo
+      // Calcula o consumo diário como diferença entre volume atual e anterior
+      if (tipoConsumoAtual === 'Água') {
+        consumoCalculado = (novoVolumeAtual - volumeAnterior) * 1000; // Em litros
+      } else if (tipoConsumoAtual === 'Gás') {
+        consumoCalculado = (novoVolumeAtual - volumeAnterior); // Em m³
+      }
+
       const primeiroRegistro = registrosCache.find(r => r.tipo === tipoConsumoAtual && r.volume_inicial && r.volume_inicial !== '-');
       volumeInicialUsado = primeiroRegistro ? primeiroRegistro.volume_inicial : (ultimoVolumeInicialRegistrado !== null ? ultimoVolumeInicialRegistrado.toFixed(2) : '-');
     }
+
 
     const consumoPorApartamento = apartamentos > 0 ? consumoCalculado / apartamentos : 0;
 
@@ -598,10 +607,8 @@
     const registroSalvo = await postData(apiUrl, novoRegistroData);
 
     if (registroSalvo) {
-      // Atualiza o cache local e a tabela
-      registrosCache.push(registroSalvo);
-      renderizarTabela(registrosCache);
-      this.reset(); // Limpa o formulário
+      await fetchRegistros(tipoConsumoAtual); // ✅ recarrega da API
+      this.reset();
       // Atualiza o último volume inicial se este foi o primeiro registro
       if (registrosCache.filter(r => r.tipo === tipoConsumoAtual).length === 1 && registroSalvo.volume_inicial !== '-') {
           ultimoVolumeInicialRegistrado = parseFloat(registroSalvo.volume_inicial);
