@@ -379,40 +379,47 @@
       return null; // Caso nem a inicial esteja definida
   }
 
-  async function registrarVolumeInicial() {
-    const unidade = 'kWh';
-    const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
+  async function registrarVolumeInicial() { // Adaptado para Leitura Inicial
+      const unidade = 'kWh';
+      const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
 
-    if (leituraInput !== null && leituraInput.trim() !== "") {
-      const leitura = parseFloat(leituraInput.replace(',', '.'));
+      if (leituraInput !== null && leituraInput.trim() !== "") {
+          const leitura = parseFloat(leituraInput.replace(',', '.'));
+          if (!isNaN(leitura) && leitura >= 0) {
+              const leituraFormatada = leitura.toFixed(2);
 
-      if (!isNaN(leitura) && leitura >= 0) {
-        const leituraFormatada = leitura.toFixed(2);
+              // Envia para o backend (reutilizando a view de volume inicial)
+              const result = await postData(initialVolumeUrl, {
+                  tipo: tipoConsumoAtual,
+                  volumeInicial: leituraFormatada // volumeInicial usado para leitura inicial
+              });
 
-        // Cria um novo registro com leitura inicial
-        const registroInicialData = {
-          tipo: tipoConsumoAtual,
-          consumo: '-',
-          apartamentos: '-',
-          consumoPorApartamento: '-',
-          volumeInicial: leituraFormatada,
-          volumeAtual: leituraFormatada
-        };
+              if (result && result.success) {
+                  alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${leituraFormatada} ${unidade}) registrada.`);
 
-        // Salva no banco de dados
-        const registroSalvo = await postData(apiUrl, registroInicialData);
+                  ultimaLeituraInicialRegistrada = leitura; // Atualiza localmente
 
-        if (registroSalvo && !registroSalvo.error) {
-          alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} registrada com sucesso: ${leituraFormatada} ${unidade}`);
-          ultimaLeituraInicialRegistrada = leitura;
-          fetchRegistros(tipoConsumoAtual); // Atualiza a tabela
-        } else {
-          alert('Erro ao salvar a leitura inicial. Tente novamente.');
-        }
-      } else {
-        alert('Leitura inválida. Por favor, insira um número positivo.');
+                  // Sempre cria um novo registro com leitura inicial
+                  const registroInicialData = {
+                      tipo: tipoConsumoAtual,
+                      consumo: '-',
+                      apartamentos: '-',
+                      consumoPorApartamento: '-',
+                      volumeInicial: leituraFormatada,
+                      volumeAtual: leituraFormatada
+                  };
+
+                  const registroSalvo = await postData(apiUrl, registroInicialData);
+                  if (registroSalvo) {
+                      fetchRegistros(tipoConsumoAtual); // Recarrega para mostrar o registro
+                  }
+              } else {
+                  alert('Falha ao registrar a leitura inicial no servidor.');
+              }
+          } else {
+              alert('Leitura inválida. Por favor, insira um número positivo.');
+          }
       }
-    }
   }
 
 
@@ -513,48 +520,30 @@
   });
   
 
-  function baixarTabelaComoExcel() {
-    const tabela = document.getElementById('tabela-consumo');
-    
-    // Clona a tabela para não alterar a original
-    const tabelaClone = tabela.cloneNode(true);
+    function exportToExcel(data, filename) {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Consumo");
 
-    // Adiciona estilos de borda à tabela, às linhas e células
-    tabelaClone.setAttribute('border', '1');
-    tabelaClone.setAttribute('style', 'border-collapse: collapse;');
-
-    const linhas = tabelaClone.getElementsByTagName('tr');
-    for (let i = 0; i < linhas.length; i++) {
-      const celulas = linhas[i].children;
-      for (let j = 0; j < celulas.length; j++) {
-        celulas[j].setAttribute('style', 'border: 1px solid black; padding: 5px;');
-      }
-    }
-
-    const htmlTabela = tabelaClone.outerHTML;
-    const nomeArquivo = 'consumo_hotel_energia.xls';
-    const tipoMime = 'application/vnd.ms-excel';
-
-    const blob = new Blob(['\ufeff' + htmlTabela], {
-      type: tipoMime
-    });
-
-    // Cria um link de download temporário
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = nomeArquivo;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      XLSX.writeFile(workbook, filename);
   }
 
-  // Adiciona evento ao botão de download
-  document.getElementById('btnBaixarPlanilha').addEventListener('click', baixarTabelaComoExcel);
+
+  document.getElementById('btnBaixarPlanilha').addEventListener('click', () => {
+      if (registrosCache.length === 0) {
+          alert("Não há dados para exportar.");
+          return;
+      }
+
+      const tipo = tipoConsumoAtual.toLowerCase();
+      const filename = `consumo_${tipo}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      exportToExcel(registrosCache, filename);
+  });
 
 
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 </body>
 </html>
