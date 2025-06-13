@@ -490,42 +490,38 @@
 
   async function registrarVolumeInicial() {
       if (tipoConsumoAtual === 'Água' || tipoConsumoAtual === 'Gás') {
-          const unidade = tipoConsumoAtual === 'Água' ? 'm³' : 'm³';
+          const unidade = 'm³';
           const volumeInput = prompt(`Digite o consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
           
           if (volumeInput !== null && volumeInput.trim() !== "") {
               const volume = parseFloat(volumeInput.replace(',', '.')); // Trata vírgula decimal
               if (!isNaN(volume) && volume >= 0) {
                   const volumeFormatado = volume.toFixed(2);
-                  
-                  // Envia para o backend (a view atual apenas confirma recebimento)
-                  const result = await postData(initialVolumeUrl, { tipo: tipoConsumoAtual, volumeInicial: volumeFormatado });
-                  
-                  if (result && result.success) {
-                      alert(`Consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} ${unidade}) registrado temporariamente. Será usado no próximo cálculo.`);
-                      ultimoVolumeInicialRegistrado = volume; // Armazena localmente para o próximo cálculo
 
-                      // Cria um registro visual na tabela com apenas o volume inicial
-                      const registroInicial = {
-                          tipo: tipoConsumoAtual,
-                          consumo: '-', // sem consumo ainda
-                          apartamentos: '-',
-                          consumo_por_apartamento: '-',
-                          data: new Date().toISOString().split('T')[0], // data atual
-                          volume_inicial: volumeFormatado,
-                          volume_atual: volumeFormatado // ainda não há volume atual
-                      };
+                  // Dados a serem enviados para criar um registro no banco
+                  const registroInicial = {
+                      tipo: tipoConsumoAtual,
+                      consumo: '-',
+                      apartamentos: '-',
+                      consumoPorApartamento: '-',
+                      volumeInicial: volumeFormatado,
+                      volumeAtual: volumeFormatado
+                  };
 
-                      registrosCache.push(registroInicial); // adiciona ao cache local
-                      renderizarTabela(registrosCache);     // re-renderiza a tabela com o novo item
+                  const registroSalvo = await postData(apiUrl, registroInicial);
+
+                  if (registroSalvo) {
+                      alert(`Consumo inicial de ${tipoConsumoAtual.toLowerCase()} (${volumeFormatado} ${unidade}) registrado com sucesso no banco de dados.`);
+                      ultimoVolumeInicialRegistrado = volume; // Atualiza variável local
+                      fetchRegistros(tipoConsumoAtual); // Recarrega a tabela a partir do backend
                   } else {
-                      alert('Falha ao registrar o volume inicial no servidor.');
+                      alert('Falha ao salvar o volume inicial no servidor.');
                   }
 
               } else {
                   alert('Volume inválido. Por favor, insira um número positivo.');
               }
-          } 
+          }
       } else {
           alert('O registro de volume inicial só é aplicável para Água e Gás.');
       }

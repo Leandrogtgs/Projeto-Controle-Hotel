@@ -223,10 +223,31 @@ def consumo_rvn(request):
     # Simplesmente renderiza o template. A lógica de dados será via AJAX.
     return render(request, 'minha_pagina/consumo_rvn.html')
 
+# View para a página de consumo de gás (rvn)
+@login_required
+def consumo_gas_rvn(request):
+    # Simplesmente renderiza o template. A lógica de dados será via AJAX.
+    return render(request, 'minha_pagina/consumo_gas_rvn.html')
+
+
+# View para a página de consumo de energia (rvn)
+@login_required
+def consumo_energia_rvn(request):
+    # Simplesmente renderiza o template. A lógica de dados será via AJAX.
+    return render(request, 'minha_pagina/consumo_energia_rvn.html')
+
+
 
 
 def consumo_rvn_view(request):
     return render(request, 'minha_pagina/consumo_rvn.html')
+
+
+
+def consumo_energia_rvn_view(request):
+    return render(request, 'minha_pagina/consumo_energia_rvn.html')
+
+
 
 def api_registros_rvn(request):
     if request.method == 'GET':
@@ -240,7 +261,7 @@ def api_registros_rvn(request):
             tipo=data.get('tipo'),
             consumo=data.get('consumo'),
             apartamentos=data.get('apartamentos'),
-            consumo_por_apartamento=data.get('consumoPorApartamento'),
+            consumo_por_apartamento=data.get('consumo_por_apartamento'),
             volume_inicial=data.get('volumeInicial'),
             volume_atual=data.get('volumeAtual')
         )
@@ -302,3 +323,6 @@ def registrar_volume_inicial_rvn(request):
                 }
             })
         return JsonResponse({'success': False, 'message': 'Dados incompletos'}, status=400)
+    
+
+
