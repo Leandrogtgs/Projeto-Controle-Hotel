@@ -379,47 +379,40 @@
       return null; // Caso nem a inicial esteja definida
   }
 
-  async function registrarVolumeInicial() { // Adaptado para Leitura Inicial
-      const unidade = 'kWh';
-      const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
+  async function registrarVolumeInicial() {
+    const unidade = 'kWh';
+    const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
 
-      if (leituraInput !== null && leituraInput.trim() !== "") {
-          const leitura = parseFloat(leituraInput.replace(',', '.'));
-          if (!isNaN(leitura) && leitura >= 0) {
-              const leituraFormatada = leitura.toFixed(2);
+    if (leituraInput !== null && leituraInput.trim() !== "") {
+      const leitura = parseFloat(leituraInput.replace(',', '.'));
 
-              // Envia para o backend (reutilizando a view de volume inicial)
-              const result = await postData(initialVolumeUrl, {
-                  tipo: tipoConsumoAtual,
-                  volumeInicial: leituraFormatada // volumeInicial usado para leitura inicial
-              });
+      if (!isNaN(leitura) && leitura >= 0) {
+        const leituraFormatada = leitura.toFixed(2);
 
-              if (result && result.success) {
-                  alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${leituraFormatada} ${unidade}) registrada.`);
+        // Cria um novo registro com leitura inicial
+        const registroInicialData = {
+          tipo: tipoConsumoAtual,
+          consumo: '-',
+          apartamentos: '-',
+          consumoPorApartamento: '-',
+          volumeInicial: leituraFormatada,
+          volumeAtual: leituraFormatada
+        };
 
-                  ultimaLeituraInicialRegistrada = leitura; // Atualiza localmente
+        // Salva no banco de dados
+        const registroSalvo = await postData(apiUrl, registroInicialData);
 
-                  // Sempre cria um novo registro com leitura inicial
-                  const registroInicialData = {
-                      tipo: tipoConsumoAtual,
-                      consumo: '-',
-                      apartamentos: '-',
-                      consumoPorApartamento: '-',
-                      volumeInicial: leituraFormatada,
-                      volumeAtual: leituraFormatada
-                  };
-
-                  const registroSalvo = await postData(apiUrl, registroInicialData);
-                  if (registroSalvo) {
-                      fetchRegistros(tipoConsumoAtual); // Recarrega para mostrar o registro
-                  }
-              } else {
-                  alert('Falha ao registrar a leitura inicial no servidor.');
-              }
-          } else {
-              alert('Leitura inválida. Por favor, insira um número positivo.');
-          }
+        if (registroSalvo && !registroSalvo.error) {
+          alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} registrada com sucesso: ${leituraFormatada} ${unidade}`);
+          ultimaLeituraInicialRegistrada = leitura;
+          fetchRegistros(tipoConsumoAtual); // Atualiza a tabela
+        } else {
+          alert('Erro ao salvar a leitura inicial. Tente novamente.');
+        }
+      } else {
+        alert('Leitura inválida. Por favor, insira um número positivo.');
       }
+    }
   }
 
 
