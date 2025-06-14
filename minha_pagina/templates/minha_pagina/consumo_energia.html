@@ -379,7 +379,7 @@
       return null; // Caso nem a inicial esteja definida
   }
 
-  async function registrarVolumeInicial() { // Adaptado para Leitura Inicial
+  async function registrarVolumeInicial() {
       const unidade = 'kWh';
       const leituraInput = prompt(`Digite a leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${unidade}):`);
 
@@ -388,31 +388,16 @@
           if (!isNaN(leitura) && leitura >= 0) {
               const leituraFormatada = leitura.toFixed(2);
 
-              // Envia para o backend (reutilizando a view de volume inicial)
+              // Envia para o backend (assumimos que ele já cria o registro completo)
               const result = await postData(initialVolumeUrl, {
                   tipo: tipoConsumoAtual,
-                  volumeInicial: leituraFormatada // volumeInicial usado para leitura inicial
+                  volumeInicial: leituraFormatada
               });
 
               if (result && result.success) {
                   alert(`Leitura inicial de ${tipoConsumoAtual.toLowerCase()} (${leituraFormatada} ${unidade}) registrada.`);
-
-                  ultimaLeituraInicialRegistrada = leitura; // Atualiza localmente
-
-                  // Sempre cria um novo registro com leitura inicial
-                  const registroInicialData = {
-                      tipo: tipoConsumoAtual,
-                      consumo: '-',
-                      apartamentos: '-',
-                      consumoPorApartamento: '-',
-                      volumeInicial: leituraFormatada,
-                      volumeAtual: leituraFormatada
-                  };
-
-                  const registroSalvo = await postData(apiUrl, registroInicialData);
-                  if (registroSalvo) {
-                      fetchRegistros(tipoConsumoAtual); // Recarrega para mostrar o registro
-                  }
+                  ultimaLeituraInicialRegistrada = leitura;
+                  fetchRegistros(tipoConsumoAtual); // Recarrega para mostrar o registro atualizado
               } else {
                   alert('Falha ao registrar a leitura inicial no servidor.');
               }

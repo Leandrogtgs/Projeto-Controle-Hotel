@@ -14,7 +14,7 @@ class RegistroConsumo(models.Model):
     TIPO_CHOICES = [
         ('Água', 'Água'),
         ('Gás', 'Gás'),
-        ('Eletricidade', 'Eletricidade'),
+        ('Eletricidade', 'eEetricidade'),
     ]
 
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)

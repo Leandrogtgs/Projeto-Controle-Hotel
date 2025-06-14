@@ -175,7 +175,7 @@ def api_registrar_volume_inicial(request):
         tipo_consumo = data.get('tipo')
         volume_inicial = data.get('volumeInicial')
 
-        if not tipo_consumo or tipo_consumo not in ['Água', 'Gás']:
+        if not tipo_consumo or tipo_consumo not in ['Água', 'Gás', 'Eletricidade']:
             return JsonResponse({'error': 'Tipo de consumo inválido ou não suportado para volume inicial.'}, status=400)
 
         try:
