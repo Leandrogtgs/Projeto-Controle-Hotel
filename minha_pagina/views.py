@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
 
 # View para a página inicial (sem alterações necessárias por enquanto)
+@login_required
 def pagina_inicial(request):
     return render(request, 'minha_pagina/pagina_inicial.html')
 
