@@ -51,7 +51,7 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px;
     box-sizing: border-box;
     margin-top: 60px;
     position: relative;
@@ -324,6 +324,9 @@
       <br />
       <input type="number" id="apartamentos_ocupados" name="apartamentos_ocupados" placeholder="Quantidade de apartamentos ocupados" min="1" required />
       <br />
+
+      <input type="number" id="hospedes" name="hospedes" placeholder="Número de hóspedes" min="1" required />
+
       <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
         <button type="submit">Calcular</button>
         <button type="button" onclick="registrarVolumeInicial()">Registrar Consumo inicial</button>
@@ -341,9 +344,11 @@
             <th id="thConsumoDiario">Consumo Diário (litros)</th>
             <th>Apartamentos Ocupados</th>
             <th id="thConsumoPorApartamento">Consumo por Apartamento (litros)</th>
+            <th>Hóspedes</th>
             <th>Data</th>
             <th>Consumo inicial (m³)</th>
             <th>Consumo Atual (m³) </th>
+            <th>Consumo Total (litros)</th>
           </tr>
         </thead>
         <tbody>
@@ -436,9 +441,11 @@
         <td>${registro.consumo !== null ? registro.consumo : '-'}</td>
         <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
         <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
+        <td>${registro.hospedes !== null ? registro.hospedes : '-'}</td>
         <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
         <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
         <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
+        <td>${tipoConsumoAtual === 'Água' && registro.consumo_total != null && registro.consumo_total !== '-' ? (parseFloat(registro.consumo_total) * 1000).toFixed(2) : registro.consumo_total || "-"}</td>
       `;
       tabelaConsumoBody.appendChild(linha);
     });
@@ -586,6 +593,7 @@
       consumo: consumoCalculado.toFixed(2),
       apartamentos: apartamentos,
       consumo_por_apartamento: consumoPorApartamento.toFixed(2),
+      hospedes: parseInt(document.getElementById('hospedes').value) || 0,
       // Data é definida no backend (auto_now_add)
       volumeInicial: volumeInicialUsado, // Usa o volume inicial encontrado
       volumeAtual: tipoConsumoAtual === 'Eletricidade' ? '-' : novoVolumeAtual.toFixed(2)

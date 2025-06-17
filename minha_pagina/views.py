@@ -51,6 +51,11 @@ def api_registros_consumo(request):
 
         data = []
         for r in registros:
+            # Calcula consumo_total na hora da consulta, caso não esteja salvo no BD
+            consumo_total = None
+            if r.volume_atual is not None and r.volume_inicial is not None:
+                consumo_total = r.volume_atual - r.volume_inicial
+
             data.append({
                 "id": r.id,
                 "tipo": r.tipo,
@@ -63,6 +68,8 @@ def api_registros_consumo(request):
                 "botija_02": r.botija_02 or "-",
                 "botija_03": r.botija_03 or "-",
                 "botija_04": r.botija_04 or "-",
+                "hospedes": r.hospedes or "-",
+                "consumo_total": consumo_total if consumo_total is not None else "-",
                 "data": r.data.strftime("%Y-%m-%d") if r.data else None,
             })
 
@@ -80,18 +87,25 @@ def api_registros_consumo(request):
                 except:
                     return None
 
+            volume_inicial = clean(dados.get("volumeInicial"))
+            volume_atual = clean(dados.get("volumeAtual"))
+
+            consumo_total = volume_atual - volume_inicial if volume_atual is not None and volume_inicial is not None else None
+
             registro = RegistroConsumo.objects.create(
                 usuario=request.user,
                 tipo=dados.get("tipo"),
                 consumo=clean(dados.get("consumo")),
                 apartamentos=clean(dados.get("apartamentos"), int),
                 consumo_por_apartamento=clean(dados.get("consumoPorApartamento")),
-                volume_inicial=clean(dados.get("volumeInicial")),
-                volume_atual=clean(dados.get("volumeAtual")),
+                volume_inicial=volume_inicial,
+                volume_atual=volume_atual,
                 botija_01=clean(dados.get("botija_01")),
                 botija_02=clean(dados.get("botija_02")),
                 botija_03=clean(dados.get("botija_03")),
                 botija_04=clean(dados.get("botija_04")),
+                hospedes=clean(dados.get("hospedes"), int),
+                consumo_total=consumo_total,
             )
 
             return JsonResponse({
@@ -106,12 +120,16 @@ def api_registros_consumo(request):
                 "botija_02": registro.botija_02 or "-",
                 "botija_03": registro.botija_03 or "-",
                 "botija_04": registro.botija_04 or "-",
+                "hospedes": registro.hospedes or "-",
+                "consumo_total": registro.consumo_total or "-",
                 "data": registro.data.strftime("%Y-%m-%d"),
             }, status=201)
 
         except Exception as e:
             print(f"Erro: {e}")
             return JsonResponse({"error": "Erro ao salvar"}, status=500)
+
+
 
 
 @login_required
@@ -259,32 +277,102 @@ def consumo_energia_rvn_view(request):
 
 
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def api_registros_rvn(request):
     if request.method == 'GET':
         tipo = request.GET.get('tipo')
-        registros = ConsumoRVN.objects.filter(tipo=tipo).values()
-        return JsonResponse(list(registros), safe=False)
+        registros = ConsumoRVN.objects.filter(tipo=tipo).order_by("data", "id")
+        data = []
+
+        for r in registros:
+            # Obtém volume_inicial e volume_atual convertidos para float (ou None)
+            try:
+                volume_inicial = float(r.volume_inicial) if r.volume_inicial is not None else None
+            except:
+                volume_inicial = None
+
+            try:
+                volume_atual = float(r.volume_atual) if r.volume_atual is not None else None
+            except:
+                volume_atual = None
+
+            if volume_inicial is not None and volume_atual is not None:
+                consumo_total = volume_atual - volume_inicial
+                consumo_total_str = f"{consumo_total:.2f}"
+            else:
+                consumo_total_str = "-"
+
+            data.append({
+                "id": r.id,
+                "tipo": r.tipo,
+                "consumo": str(r.consumo) if r.consumo is not None else "-",
+                "apartamentos": r.apartamentos or "-",
+                "consumo_por_apartamento": str(r.consumo_por_apartamento) if r.consumo_por_apartamento is not None else "-",
+                "volume_inicial": str(r.volume_inicial) if r.volume_inicial is not None else "-",
+                "volume_atual": str(r.volume_atual) if r.volume_atual is not None else "-",
+                "botija_01": str(r.botija_01) if r.botija_01 is not None else "-",
+                "botija_02": str(r.botija_02) if r.botija_02 is not None else "-",
+                "hospedes": r.hospedes or "-",
+                "data": r.data.strftime('%Y-%m-%d'),
+                "consumo_total": consumo_total_str,
+            })
+
+        return JsonResponse(data, safe=False)
 
     elif request.method == 'POST':
-        data = json.loads(request.body)
-        registro = ConsumoRVN.objects.create(
-            tipo=data.get('tipo'),
-            consumo=data.get('consumo'),
-            apartamentos=data.get('apartamentos'),
-            consumo_por_apartamento=data.get('consumo_por_apartamento'),
-            volume_inicial=data.get('volumeInicial'),
-            volume_atual=data.get('volumeAtual')
-        )
-        return JsonResponse({
-            "id": registro.id,
-            "tipo": registro.tipo,
-            "consumo": str(registro.consumo),
-            "apartamentos": registro.apartamentos,
-            "consumo_por_apartamento": str(registro.consumo_por_apartamento),
-            "data": registro.data.strftime('%Y-%m-%d'),
-            "volume_inicial": str(registro.volume_inicial),
-            "volume_atual": str(registro.volume_atual)
-        })
+        try:
+            data = json.loads(request.body)
+
+            def clean(val, tipo=float):
+                if val in ("", "-", None):
+                    return None
+                try:
+                    return tipo(val)
+                except:
+                    return None
+
+            volume_inicial_val = clean(data.get('volumeInicial'))
+            volume_atual_val = clean(data.get('volumeAtual'))
+
+            registro = ConsumoRVN.objects.create(
+                tipo=data.get('tipo'),
+                consumo=clean(data.get('consumo')),
+                apartamentos=clean(data.get('apartamentos'), int),
+                consumo_por_apartamento=clean(data.get('consumo_por_apartamento')),
+                volume_inicial=volume_inicial_val,
+                volume_atual=volume_atual_val,
+                botija_01=clean(data.get("botija_01")),
+                botija_02=clean(data.get("botija_02")),
+                hospedes=clean(data.get("hospedes"), int),
+            )
+
+            # Calcula consumo_total no POST também
+            if volume_inicial_val is not None and volume_atual_val is not None:
+                consumo_total_post = volume_atual_val - volume_inicial_val
+                consumo_total_post_str = f"{consumo_total_post:.2f}"
+            else:
+                consumo_total_post_str = "-"
+
+            return JsonResponse({
+                "id": registro.id,
+                "tipo": registro.tipo,
+                "consumo": str(registro.consumo or "-"),
+                "apartamentos": registro.apartamentos or "-",
+                "consumo_por_apartamento": str(registro.consumo_por_apartamento or "-"),
+                "volume_inicial": str(registro.volume_inicial or "-"),
+                "volume_atual": str(registro.volume_atual or "-"),
+                "botija_01": str(registro.botija_01 or "-"),
+                "botija_02": str(registro.botija_02 or "-"),
+                "hospedes": registro.hospedes or "-",
+                "data": registro.data.strftime('%Y-%m-%d'),
+                "consumo_total": consumo_total_post_str,
+            }, status=201)
+
+        except Exception as e:
+            print("Erro ao salvar:", e)
+            return JsonResponse({"error": "Erro ao salvar dados"}, status=500)
+
 
 @csrf_exempt
 def remover_ultimo_rvn(request):

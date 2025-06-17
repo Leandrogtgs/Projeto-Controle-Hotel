@@ -52,7 +52,7 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       text-align: center;
       width: 100%;
-      max-width: 1000px; /* Ajustado para gás */
+      max-width: 1100px; /* Ajustado para gás */
       box-sizing: border-box;
       margin-top: 60px;
       position: relative;
@@ -242,22 +242,25 @@
       <input type="number" id="apartamentos_ocupados" name="apartamentos_ocupados" placeholder="Quantidade de apartamentos ocupados" min="1" required />
       <br />
 
+      <input type="number" id="hospedes" name="hospedes" placeholder="Número de hóspedes" min="1" required />
+
+
       <!-- Campos das Botijas -->
       <div style="display: flex; gap: 20px; justify-content: center; margin-top: 10px; flex-wrap: nowrap;">
         <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
-          <label for="botija_01">Botija 01 (kg)</label>
+          <label for="botija_01">Botija 01 (Manômetro)</label>
           <input type="number" id="botija_01" name="botija_01" step="0.01" min="0" />
         </div>
         <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
-          <label for="botija_02">Botija 02 (kg)</label>
+          <label for="botija_02">Botija 02 (Manômetro)</label>
           <input type="number" id="botija_02" name="botija_02" step="0.01" min="0" />
         </div>
         <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
-          <label for="botija_03">Botija 03 (kg)</label>
+          <label for="botija_03">Botija 03 (Manômetro)</label>
           <input type="number" id="botija_03" name="botija_03" step="0.01" min="0" />
         </div>
         <div style="display: flex; flex-direction: column; align-items: center; min-width: 120px;">
-          <label for="botija_04">Botija 04 (kg)</label>
+          <label for="botija_04">Botija 04 (Manômetro)</label>
           <input type="number" id="botija_04" name="botija_04" step="0.01" min="0" />
         </div>
       </div>
@@ -265,7 +268,7 @@
 
       <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
         <button type="submit">Calcular</button>
-        <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 760 kg)</button>
+        <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 320 (Manômetro) = 760 kg)</button>
       </div>
     </form>
 
@@ -281,10 +284,12 @@
             <th id="thConsumoDiario">Consumo Diário (kg)</th>
             <th>Apartamentos Ocupados</th>
             <th id="thConsumoPorApartamento">Consumo por Apartamento (kg)</th>
+            <th>Hóspedes</th>
             <th>Data</th>
             <th>Volume Inicial (kg)</th>
             <th>Volume Atual (kg)</th>
             <th>Volume Atual (%)</th>
+            <th>Consumo Total (kg)</th>
           </tr>
         </thead>
         <tbody>
@@ -399,10 +404,12 @@
       <td>${registro.consumo !== null ? registro.consumo : '-'}</td>
       <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
       <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
+      <td>${registro.hospedes !== null ? registro.hospedes : '-'}</td>
       <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
       <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
       <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
       <td>${volumePorcentagem}</td>
+      <td>${registro.consumo_total * -1 || "-"}</td>
       `;
       tabelaConsumoBody.appendChild(linha);
     });
@@ -522,12 +529,14 @@
       consumo: consumoCalculadoKg.toFixed(2),
       apartamentos: apartamentos,
       consumoPorApartamento: consumoPorApartamentoKg.toFixed(2),
+      hospedes: parseInt(document.getElementById('hospedes').value) || 0,
       volumeInicial: volInicial.toFixed(2),
       volumeAtual: novoVolumeAtualKg.toFixed(2),
       botija_01: parseFloat(document.getElementById('botija_01').value) || 0,
       botija_02: parseFloat(document.getElementById('botija_02').value) || 0,
       botija_03: parseFloat(document.getElementById('botija_03').value) || 0,
       botija_04: parseFloat(document.getElementById('botija_04').value) || 0
+      
     };
 
     

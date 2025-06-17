@@ -242,6 +242,9 @@
       <br />
       <input type="number" id="apartamentos_ocupados" name="apartamentos_ocupados" placeholder="Quantidade de apartamentos ocupados" min="1" required />
       <br />
+
+      <input type="number" id="hospedes" name="hospedes" placeholder="Número de hóspedes" min="1" required />
+
       <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
         <button type="submit">Calcular</button>
         <button type="button" onclick="registrarVolumeInicial()">Registrar Leitura Inicial</button> <!-- Botão adaptado -->
@@ -259,9 +262,11 @@
             <th id="thConsumoDiario">Consumo Diário (kWh)</th>
             <th>Apartamentos Ocupados</th>
             <th id="thConsumoPorApartamento">Consumo por Apartamento (kWh)</th>
+            <th>Hóspedes</th>
             <th>Data</th>
             <th>Leitura Inicial (kWh)</th> <!-- Adaptado -->
             <th>Leitura Atual (kWh)</th> <!-- Adaptado -->
+            <th>Consumo Total (kWh)</th>
           </tr>
         </thead>
         <tbody>
@@ -349,9 +354,11 @@
         <td>${registro.consumo !== null ? registro.consumo : '-'}</td>
         <td>${registro.apartamentos !== null ? registro.apartamentos : '-'}</td>
         <td>${registro.consumo_por_apartamento !== null ? registro.consumo_por_apartamento : '-'}</td>
+        <td>${registro.hospedes !== null ? registro.hospedes : '-'}</td>
         <td>${registro.data ? new Date(registro.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
         <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td> <!-- Leitura Inicial -->
         <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td> <!-- Leitura Atual -->
+        <td>${registro.consumo_total || "-"}</td>
       `;
       tabelaConsumoBody.appendChild(linha);
     });
@@ -457,6 +464,7 @@
       consumo: consumoCalculadoKWh.toFixed(2),
       apartamentos: apartamentos,
       consumo_por_apartamento: consumoPorApartamentoKWh.toFixed(2),
+      hospedes: parseInt(document.getElementById('hospedes').value) || 0,
       volumeInicial: leituraInicialUsada, // Campo reutilizado para Leitura Inicial
       volumeAtual: novaLeituraKWh.toFixed(2) // Campo reutilizado para Leitura Atual
     };

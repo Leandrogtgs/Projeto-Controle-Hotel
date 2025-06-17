@@ -31,6 +31,9 @@ class RegistroConsumo(models.Model):
     botija_03 = models.FloatField(null=True, blank=True)
     botija_04 = models.FloatField(null=True, blank=True)
 
+    hospedes = models.IntegerField(null=True, blank=True)
+    consumo_total = models.FloatField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.tipo} - {self.data}"
 
@@ -44,6 +47,12 @@ class ConsumoRVN(models.Model):
     data = models.DateField(auto_now_add=True)
     volume_inicial = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     volume_atual = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    botija_01 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    botija_02 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    hospedes = models.IntegerField(null=True, blank=True)
+    consumo_total = models.FloatField(null=True, blank=True)
 
     class Meta:
         ordering = ['-data']
