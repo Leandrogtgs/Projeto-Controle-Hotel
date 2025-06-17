@@ -38,83 +38,81 @@ def consumo_energia(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-@csrf_exempt # REMOVER EM PRODUÇÃO E USAR CSRF TOKEN NO AJAX
+@csrf_exempt  # REMOVER EM PRODUÇÃO
 def api_registros_consumo(request):
-    if request.method == 'GET':
-        tipo_consumo = request.GET.get('tipo', None)
+    if request.method == "GET":
+        tipo_consumo = request.GET.get("tipo")
         if not tipo_consumo:
-            return JsonResponse({'error': 'Parâmetro "tipo" é obrigatório'}, status=400)
-        
-        registros = RegistroConsumo.objects.filter(usuario=request.user, tipo=tipo_consumo).order_by('data', 'id')
-        # Serializar os dados para JSON
-        data = list(registros.values('id', 'tipo', 'consumo', 'apartamentos', 'consumo_por_apartamento', 'data', 'volume_inicial', 'volume_atual'))
-        # Converter DateField para string
-        for item in data:
-            item['data'] = item['data'].strftime('%Y-%m-%d') if item['data'] else None
-            # Garantir que floats sejam tratados corretamente (evitar None)
-            item['consumo'] = item['consumo'] if item['consumo'] is not None else '-'
-            item['apartamentos'] = item['apartamentos'] if item['apartamentos'] is not None else '-'
-            item['consumo_por_apartamento'] = item['consumo_por_apartamento'] if item['consumo_por_apartamento'] is not None else '-'
-            item['volume_inicial'] = item['volume_inicial'] if item['volume_inicial'] is not None else '-'
-            item['volume_atual'] = item['volume_atual'] if item['volume_atual'] is not None else '-'
+            return JsonResponse({"error": "Parâmetro 'tipo' é obrigatório"}, status=400)
+
+        registros = RegistroConsumo.objects.filter(
+            usuario=request.user, tipo=tipo_consumo
+        ).order_by("data", "id")
+
+        data = []
+        for r in registros:
+            data.append({
+                "id": r.id,
+                "tipo": r.tipo,
+                "consumo": r.consumo or "-",
+                "apartamentos": r.apartamentos or "-",
+                "consumo_por_apartamento": r.consumo_por_apartamento or "-",
+                "volume_inicial": r.volume_inicial or "-",
+                "volume_atual": r.volume_atual or "-",
+                "botija_01": r.botija_01 or "-",
+                "botija_02": r.botija_02 or "-",
+                "botija_03": r.botija_03 or "-",
+                "botija_04": r.botija_04 or "-",
+                "data": r.data.strftime("%Y-%m-%d") if r.data else None,
+            })
 
         return JsonResponse(data, safe=False)
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         try:
-            data = json.loads(request.body)
-            
-            # Validar dados recebidos (exemplo básico)
-            tipo = data.get('tipo')
-            consumo = data.get('consumo')
-            apartamentos = data.get('apartamentos')
-            consumo_por_apartamento = data.get('consumoPorApartamento')
-            volume_inicial = data.get('volumeInicial')
-            volume_atual = data.get('volumeAtual')
+            dados = json.loads(request.body)
 
-            if not tipo or tipo not in [choice[0] for choice in RegistroConsumo.TIPO_CHOICES]:
-                return JsonResponse({'error': 'Tipo de consumo inválido ou ausente'}, status=400)
-
-            # Função auxiliar para converter '-' ou None para None e string para float/int
-            def clean_value(value, target_type=float):
-                if value == '-' or value is None or value == '':
+            def clean(val, tipo=float):
+                if val in ("", "-", None):
                     return None
                 try:
-                    return target_type(value)
-                except (ValueError, TypeError):
-                    return None # Ou lançar um erro se o valor for obrigatório e inválido
+                    return tipo(val)
+                except:
+                    return None
 
-            registro = RegistroConsumo(
+            registro = RegistroConsumo.objects.create(
                 usuario=request.user,
-                tipo=tipo,
-                consumo=clean_value(consumo),
-                apartamentos=clean_value(apartamentos, int),
-                consumo_por_apartamento=clean_value(consumo_por_apartamento),
-                # Data é auto_now_add, não precisa ser passada aqui
-                volume_inicial=clean_value(volume_inicial),
-                volume_atual=clean_value(volume_atual)
+                tipo=dados.get("tipo"),
+                consumo=clean(dados.get("consumo")),
+                apartamentos=clean(dados.get("apartamentos"), int),
+                consumo_por_apartamento=clean(dados.get("consumoPorApartamento")),
+                volume_inicial=clean(dados.get("volumeInicial")),
+                volume_atual=clean(dados.get("volumeAtual")),
+                botija_01=clean(dados.get("botija_01")),
+                botija_02=clean(dados.get("botija_02")),
+                botija_03=clean(dados.get("botija_03")),
+                botija_04=clean(dados.get("botija_04")),
             )
-            registro.save()
-            
-            # Retornar o registro criado (opcional, mas útil para o frontend)
-            response_data = {
-                'id': registro.id,
-                'tipo': registro.tipo,
-                'consumo': registro.consumo if registro.consumo is not None else '-',
-                'apartamentos': registro.apartamentos if registro.apartamentos is not None else '-',
-                'consumo_por_apartamento': registro.consumo_por_apartamento if registro.consumo_por_apartamento is not None else '-',
-                'data': registro.data.strftime('%Y-%m-%d'),
-                'volume_inicial': registro.volume_inicial if registro.volume_inicial is not None else '-',
-                'volume_atual': registro.volume_atual if registro.volume_atual is not None else '-'
-            }
-            return JsonResponse(response_data, status=201)
 
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'JSON inválido'}, status=400)
+            return JsonResponse({
+                "id": registro.id,
+                "tipo": registro.tipo,
+                "consumo": registro.consumo or "-",
+                "apartamentos": registro.apartamentos or "-",
+                "consumo_por_apartamento": registro.consumo_por_apartamento or "-",
+                "volume_inicial": registro.volume_inicial or "-",
+                "volume_atual": registro.volume_atual or "-",
+                "botija_01": registro.botija_01 or "-",
+                "botija_02": registro.botija_02 or "-",
+                "botija_03": registro.botija_03 or "-",
+                "botija_04": registro.botija_04 or "-",
+                "data": registro.data.strftime("%Y-%m-%d"),
+            }, status=201)
+
         except Exception as e:
-            # Logar o erro real em um sistema de logging
-            print(f"Erro ao salvar registro: {e}") 
-            return JsonResponse({'error': 'Erro interno ao salvar registro'}, status=500)
+            print(f"Erro: {e}")
+            return JsonResponse({"error": "Erro ao salvar"}, status=500)
+
 
 @login_required
 @require_http_methods(["POST"]) # Usando POST para simplicidade, idealmente seria DELETE

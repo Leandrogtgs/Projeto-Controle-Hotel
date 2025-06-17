@@ -14,7 +14,7 @@ class RegistroConsumo(models.Model):
     TIPO_CHOICES = [
         ('Água', 'Água'),
         ('Gás', 'Gás'),
-        ('Eletricidade', 'eEetricidade'),
+        ('Eletricidade', 'eletricidade'),
     ]
 
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
@@ -25,6 +25,11 @@ class RegistroConsumo(models.Model):
     volume_inicial = models.FloatField(null=True, blank=True)
     volume_atual = models.FloatField(null=True, blank=True)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    botija_01 = models.FloatField(null=True, blank=True)
+    botija_02 = models.FloatField(null=True, blank=True)
+    botija_03 = models.FloatField(null=True, blank=True)
+    botija_04 = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.tipo} - {self.data}"
