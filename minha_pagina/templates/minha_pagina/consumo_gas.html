@@ -409,7 +409,7 @@
       <td>${registro.volume_inicial !== null ? registro.volume_inicial : '-'}</td>
       <td>${registro.volume_atual !== null ? registro.volume_atual : '-'}</td>
       <td>${volumePorcentagem}</td>
-      <td>${registro.consumo_total * -1 || "-"}</td>
+      <td>${registro.consumo_total !== null ? (-1 * parseFloat(registro.consumo_total)).toFixed(2) : "-"}</td>
       `;
       tabelaConsumoBody.appendChild(linha);
     });
