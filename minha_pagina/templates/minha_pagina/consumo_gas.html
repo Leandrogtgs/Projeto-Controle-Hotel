@@ -269,6 +269,7 @@
       <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
         <button type="submit">Calcular</button>
         <button type="button" onclick="registrarVolumeInicial()">Registrar Volume Inicial (Padrão: 320 (Manômetro) = 760 kg)</button>
+        <button type="button" id="btnRegistrarVolumeBotijas">Registrar Volume Inicial por Botijas</button>
       </div>
     </form>
 
@@ -396,6 +397,7 @@
       
       if (!isNaN(volumeInicial) && volumeInicial > 0 && !isNaN(volumeAtual)) {
         volumePorcentagem = ((volumeAtual / volumeInicial) * 100).toFixed(2) + '%';
+        volumePorcentagem = ((volumeAtual / 760) * 100).toFixed(2) + '%';
       }
       
       const linha = document.createElement('tr');
@@ -641,6 +643,53 @@
   document.getElementById(id).addEventListener('input', atualizarVolumeTotal);
   });
   
+
+   // Função para registrar volume inicial com base nas botijas
+  async function registrarVolumeInicialPorBotijas() {
+    // Lê os valores das botijas
+    const botija1 = parseFloat(document.getElementById('botija_01').value) || 0;
+    const botija2 = parseFloat(document.getElementById('botija_02').value) || 0;
+    const botija3 = parseFloat(document.getElementById('botija_03').value) || 0;
+    const botija4 = parseFloat(document.getElementById('botija_04').value) || 0;
+
+    const somaBotijas = botija1 + botija2 + botija3 + botija4;
+
+    if (somaBotijas === 0) {
+      alert('Informe pelo menos uma leitura válida de botija antes de registrar o volume inicial.');
+      return;
+    }
+
+    // Converte para kg (1 ponto do manômetro = 2.375 kg)
+    const volumeKg = somaBotijas * 2.375;
+    const volumeFormatado = volumeKg.toFixed(2);
+
+    const registroInicialData = {
+      tipo: tipoConsumoAtual,
+      consumo: '-',
+      apartamentos: '-',
+      consumoPorApartamento: '-',
+      volumeInicial: volumeFormatado,
+      volumeAtual: volumeFormatado,
+      botija_01: botija1,
+      botija_02: botija2,
+      botija_03: botija3,
+      botija_04: botija4
+    };
+
+    const registroSalvo = await postData(apiUrl, registroInicialData);
+
+    if (registroSalvo) {
+      alert(`Volume inicial (${volumeFormatado} kg) registrado com sucesso com base nas botijas.`);
+      ultimoVolumeInicialRegistrado = volumeKg;
+      fetchRegistros(tipoConsumoAtual); // Atualiza a tabela
+    } else {
+      alert('Falha ao registrar o volume inicial com base nas botijas.');
+    }
+  }
+
+  // Vincula o botão à função
+  document.getElementById('btnRegistrarVolumeBotijas')
+    .addEventListener('click', registrarVolumeInicialPorBotijas);
 
   
 </script>
